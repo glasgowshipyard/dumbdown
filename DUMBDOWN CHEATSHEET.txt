@@ -1,0 +1,111 @@
+DUMBDOWN CHEATSHEET  
+
+TITLES & HEADINGS  
+
+Title  
+=====  
+
+Subtitle  
+-------- 
+
+- Title underlined with ====  
+- Subtitle underlined with ----
+- Auto-expands to match text length  
+
+LISTS  
+
+Unordered:  
+- Bullet  
+-- Sub-bullet  
+
+Ordered:  
+1. Ordered item  
+2. Another item  
+   — Sub-item  
+
+- Dash - for main bullets, em dash — for sub-bullets  
+- Simple, clear, no indentation rules  
+
+
+
+LABELS (CONTEXT MARKERS)  
+
+[LABEL] Context or category  
+
+Examples:  
+[NOTE] Only applies to Linux  
+[WARNING] Do not deploy without testing  
+[ERROR] The API is returning a 500  
+
+- Acts as a structured comment system  
+- Provides context without adding complexity  
+
+CALLOUTS & EMPHASIS  
+
+!! Action required  
+>> Key insight  
+
+Examples:  
+!! [URGENT] Fix before deployment  
+>> [INSIGHT] Could be automated  
+
+- Enhances readability without visual clutter
+
+Emphasis & Styling  
+------------------ 
+- Use ALL CAPS for emphasis (instead of bold or italics) no **emphasis**
+
+QUOTES & EXCERPTS  
+
+"This is a quoted section."  
+
+"This quote  
+spans multiple lines  
+and still works fine."  
+
+- No special syntax—just natural "quotes"  
+- Multi-line quotes work the same way  
+
+CODE & COMMANDS  
+
+Inline Code  
+This is `inline code` in a sentence.  
+
+Multi-line Code Block  
+```
+sudo apt update  
+sudo apt upgrade -y  
+```
+
+- Uses backticks ` like Markdown  
+- No need for special new syntax  
+
+SEPARATORS & BREAKS  
+
+- No separate section break needed—titles and blank lines provide structure
+
+EMOJI SUPPORT (OPTIONAL, BUT USEFUL)  
+
+✅ Completed  
+❌ Blocked  
+⚠️ Needs review  
+💡 Idea  
+🔥 Important  
+
+- No disruption to structure—just clarity  
+
+FILE & EXPORT SUPPORT  
+
+Dumbdown can be saved, exported, or converted to:  
+- .txt → Universal plaintext  
+- .md → Markdown-compatible  
+- .json → Structured for automation  
+
+IMPORT & CONVERSION SUPPORT  
+
+Dumbdown can convert from:  
+- Word .docx → Strips all styling, keeps structure  
+- Rich Text / HTML → Cleans up formatting bloat  
+- PDF Text Extraction → Extracts content, applies Dumbdown  
+
+Dumbdown is the Markdown killer: simple, readable, and universally usable. 🚀  
