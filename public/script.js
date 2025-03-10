@@ -254,6 +254,12 @@ window.addEventListener('DOMContentLoaded', function() {
       // Trim lines
       .split('\n').map(line => line.trim()).join('\n');
   }
-  
-  // Add a button to the page for triggering conversion
-  document.getElementById("convert-button") = document.getElementById("convert-button") || document.querySelector("button");
+
+  // Get a reference to the button
+    const convertButton = document.getElementById("convert-button") || document.querySelector("button");
+
+// Attach the event listener
+    if (convertButton) {
+    convertButton.addEventListener("click", convertDumbdown);
+    }   
+    
