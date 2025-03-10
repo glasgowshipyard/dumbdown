@@ -31,17 +31,16 @@ function convertToDumbdown(html) {
   let tempDiv = document.createElement("div");
   tempDiv.innerHTML = html;
 
-  // Convert headers (h1 - h3 only, deeper headers ignored for now)
-  tempDiv.querySelectorAll("h1, h2, h3").forEach(el => {
+  // Convert headers (h1 - h6)
+  tempDiv.querySelectorAll("h1, h2, h3, h4, h5, h6").forEach(el => {
       let text = el.innerText.trim();
       let underline = "";
       if (el.tagName === "H1") underline = "=".repeat(text.length);
       if (el.tagName === "H2") underline = "-".repeat(text.length);
-      if (el.tagName === "H3") underline = ""; // No underline for h3
-      el.outerHTML = `${text}\n${underline}`;
+      el.outerHTML = underline ? `${text}\n${underline}` : text;
   });
 
-  // Convert lists (handle nesting)
+  // Convert lists (handle proper indentation for nesting)
   tempDiv.querySelectorAll("ul, ol").forEach(list => {
       let isOrdered = list.tagName === "OL";
       list.querySelectorAll("li").forEach(li => {
@@ -57,14 +56,16 @@ function convertToDumbdown(html) {
       });
   });
 
-  // Convert inline formatting
-  tempDiv.innerHTML = tempDiv.innerHTML.replace(/<b>(.*?)<\/b>/gi, (_, text) => text.toUpperCase());
-  tempDiv.innerHTML = tempDiv.innerHTML.replace(/<i>(.*?)<\/i>/gi, (_, text) => `_${text}_`);
+  // Convert bold and italics to UPPERCASE
+  tempDiv.querySelectorAll("b, strong, i, em").forEach(el => {
+      let text = el.innerText.trim();
+      el.outerHTML = text.toUpperCase();
+  });
 
   // Convert blockquotes
   tempDiv.querySelectorAll("blockquote").forEach(el => {
       let content = el.innerText.trim();
-      el.outerHTML = `"${content}"`;
+      el.outerHTML = `\n\n"${content}"\n\n`;
   });
 
   // Convert code blocks
@@ -72,7 +73,8 @@ function convertToDumbdown(html) {
       let content = el.innerText.trim();
       el.outerHTML = `\n\n\`\`\`\n${content}\n\`\`\`\n\n`;
   });
-  
+
+  // Convert inline code
   tempDiv.querySelectorAll("code").forEach(el => {
       let content = el.innerText.trim();
       el.outerHTML = "`" + content + "`";
@@ -85,8 +87,8 @@ function convertToDumbdown(html) {
       el.outerHTML = `[${linkText}](${href})`;
   });
 
-  // Remove remaining HTML tags
-  return tempDiv.innerText.trim();
+  // Remove remaining HTML tags but keep formatting
+  return tempDiv.innerText.replace(/\n{3,}/g, "\n\n").trim();
 }
 
 // Start Server
