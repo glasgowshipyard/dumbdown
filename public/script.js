@@ -123,7 +123,7 @@ window.addEventListener('DOMContentLoaded', function() {
         const content = el.innerText.trim();
         console.log("Processing code block:", content.substring(0, 30) + "...");
         // Replace with backticks format
-        el.outerHTML = `<div class="dumbdown-codeblock">```\n${content}\n```</div>`;
+        el.outerHTML = `<div class="dumbdown-codeblock">\`\`\`\n${content}\n\`\`\`</div>`;
       } else if (el.tagName === 'CODE' && el.parentElement.tagName !== 'PRE') {
         // Inline code
         const content = el.innerText.trim();
