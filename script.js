@@ -1,6 +1,6 @@
 /**
  * Dumbdown Enhanced - Main JavaScript
- * Handles conversion of rich text to the Dumbdown format with special handling for news articles
+ * Handles conversion of rich text to the Dumbdown format
  */
 
 // Initialize when the DOM is fully loaded
@@ -105,9 +105,6 @@ window.addEventListener('DOMContentLoaded', function() {
   
     // Convert HTML to Dumbdown
     let text = convertHTMLToDumbdown(html);
-    
-    // Final post-processing for extremely clean output
-    text = text.replace(/\n\s*\n\s*\n+/g, '\n\n');
   
     const outputDiv = document.getElementById("output");
     if (!outputDiv) {
@@ -122,7 +119,6 @@ window.addEventListener('DOMContentLoaded', function() {
   /**
    * Enhanced HTML to Dumbdown conversion
    * Handles code blocks, headers, lists, and text formatting
-   * Special processing for excessive whitespace
    */
   function convertHTMLToDumbdown(html) {
     let tempDiv = document.createElement("div");
@@ -131,16 +127,8 @@ window.addEventListener('DOMContentLoaded', function() {
     console.log("Starting HTML conversion...");
     
     // Remove unnecessary elements that often cause whitespace issues
-    tempDiv.querySelectorAll('script, style, meta, .ad, .advertisement, [aria-hidden="true"], .hidden').forEach(el => {
+    tempDiv.querySelectorAll('script, style, meta').forEach(el => {
       el.remove();
-    });
-    
-    // Clean up image captions and timestamps
-    tempDiv.querySelectorAll('figcaption, time, .timestamp, .caption, .metadata').forEach(el => {
-      const content = el.innerText.trim();
-      if (content) {
-        el.innerHTML = content;
-      }
     });
     
     // First, handle code blocks to prevent them from being affected by other formatting
@@ -164,60 +152,86 @@ window.addEventListener('DOMContentLoaded', function() {
       console.log("Processing header: " + fullText);
       
       // For h1 and h2, create underlines
-      if (el.tagName === "H1" || el.tagName === "H2") {
-        const underline = el.tagName === "H1" 
-          ? "=".repeat(Math.max(fullText.length, 3)) 
-          : "-".repeat(Math.max(fullText.length, 3));
-          
+      if (el.tagName === "H1") {
+        const underline = "=".repeat(Math.max(fullText.length, 3));
+        el.outerHTML = `<div class="dumbdown-header">${fullText}\n${underline}</div>`;
+      } else if (el.tagName === "H2") {
+        const underline = "-".repeat(Math.max(fullText.length, 3));
         el.outerHTML = `<div class="dumbdown-header">${fullText}\n${underline}</div>`;
       }
-      // For h3, just keep the text
     });
   
-    // Convert bullet lists with proper nesting
-    const processListItems = (listItems, listType) => {
-      listItems.forEach(el => {
-        // Determine nesting level
-        let nestLevel = 0;
-        let parent = el.parentElement;
-        while (parent && (parent.tagName === 'UL' || parent.tagName === 'OL')) {
-          nestLevel++;
-          parent = parent.parentElement;
-        }
-        
-        // Use appropriate bullet based on list type and nesting
-        let marker = '';
-        if (listType === 'UL') {
-          marker = nestLevel > 1 ? '--' : '-';
-        } else {
-          marker = '1.'; // For now, all ordered items use "1."
-        }
-        
-        // Add spacing based on nesting level
-        const indentation = '  '.repeat(Math.max(0, nestLevel - 1));
-        el.innerHTML = `${indentation}${marker} ${el.innerHTML.trim()}`;
+    // Process each ordered list separately to maintain proper numbering
+    tempDiv.querySelectorAll('ol').forEach(list => {
+      let counter = 1;
+      list.querySelectorAll('> li').forEach(li => {
+        // Store the original counter value for this item
+        li.setAttribute('data-counter', counter++);
       });
-    };
+    });
     
-    console.log("Processing lists...");
+    // Process unordered lists with proper nesting
+    tempDiv.querySelectorAll('ul li').forEach(li => {
+      // Calculate nesting level
+      let level = 0;
+      let parent = li.parentElement;
+      while (parent) {
+        if (parent.tagName === 'UL' || parent.tagName === 'OL') level++;
+        parent = parent.parentElement;
+      }
+      
+      // Store level as data attribute for later processing
+      li.setAttribute('data-level', level);
+    });
     
-    // Process unordered lists
-    processListItems(tempDiv.querySelectorAll("ul > li"), 'UL');
+    // Process ordered lists with proper numbering
+    tempDiv.querySelectorAll('ol li').forEach(li => {
+      // Calculate nesting level
+      let level = 0;
+      let parent = li.parentElement;
+      while (parent) {
+        if (parent.tagName === 'UL' || parent.tagName === 'OL') level++;
+        parent = parent.parentElement;
+      }
+      
+      // Store level as data attribute for later processing
+      li.setAttribute('data-level', level);
+    });
     
-    // Process ordered lists
-    processListItems(tempDiv.querySelectorAll("ol > li"), 'OL');
-  
-    // Convert bold/italics
-    console.log("Processing text formatting...");
-    
-    tempDiv.querySelectorAll("b, strong").forEach(el => {
-      const content = el.innerHTML;
-      el.outerHTML = `<span class="dumbdown-bold">**${content}**</span>`;
+    // Now process all list items in document order
+    tempDiv.querySelectorAll('li').forEach(li => {
+      const level = parseInt(li.getAttribute('data-level') || "1");
+      const isOrdered = li.parentElement.tagName === 'OL';
+      const content = li.innerHTML.trim();
+      
+      // Calculate indentation
+      const indent = '   '.repeat(Math.max(0, level - 1));
+      
+      // Determine the marker
+      let marker;
+      if (isOrdered) {
+        // For ordered lists, use the stored counter
+        const counter = li.getAttribute('data-counter') || "1";
+        marker = `${counter}.`;
+      } else {
+        // For unordered lists, use dash(es)
+        marker = level > 1 ? '--' : '-';
+      }
+      
+      // Replace the content
+      li.innerHTML = `${indent}${marker} ${content}`;
     });
   
+    // Convert bold text to UPPERCASE
+    tempDiv.querySelectorAll("b, strong").forEach(el => {
+      const content = el.innerHTML.trim();
+      el.outerHTML = content.toUpperCase();
+    });
+  
+    // Convert italic text to UPPERCASE
     tempDiv.querySelectorAll("i, em").forEach(el => {
-      const content = el.innerHTML;
-      el.outerHTML = `<span class="dumbdown-italic">_${content}_</span>`;
+      const content = el.innerHTML.trim();
+      el.outerHTML = content.toUpperCase();
     });
   
     // Convert links
@@ -227,32 +241,41 @@ window.addEventListener('DOMContentLoaded', function() {
       el.outerHTML = `<span class="dumbdown-link">[${linkText}](${href})</span>`;
     });
   
-    // Handle blockquotes
+    // Handle blockquotes properly
     tempDiv.querySelectorAll("blockquote").forEach(el => {
-      const content = el.innerHTML.trim();
-      const lines = content.split('\n').map(line => `"${line.trim()}"`).join('\n');
-      el.outerHTML = `<div class="dumbdown-blockquote">${lines}</div>`;
+      const content = el.innerText.trim();
+      // Split by lines and add quotes to each line
+      const lines = content.split('\n');
+      const quotedLines = lines.map(line => `"${line.trim()}"`).join('\n');
+      el.outerHTML = `<div class="dumbdown-blockquote">${quotedLines}</div>`;
+    });
+  
+    // Process special callouts in divs
+    tempDiv.querySelectorAll("div").forEach(el => {
+      const content = el.innerText.trim();
+      
+      // Check for Dumbdown callout patterns
+      if (content.startsWith('[') && content.includes(']')) {
+        // Label/context marker - keep as is
+        el.outerHTML = content;
+      } else if (content.startsWith('>>')) {
+        // Insight callout - keep as is
+        el.outerHTML = content;
+      } else if (content.startsWith('!!')) {
+        // Action required - keep as is
+        el.outerHTML = content;
+      }
     });
   
     // Get the result and clean up all the wrapper spans we added
     let result = tempDiv.innerText;
     
-    console.log("Normalizing whitespace...");
-    
-    // Enhanced whitespace normalization specifically for news articles
+    // Normalize whitespace
     result = result
-      // Handle paragraph breaks with consistent spacing
+      // Remove excessive line breaks (more than 2)
       .replace(/\n{3,}/g, '\n\n')
-      // Remove trailing spaces
+      // Remove trailing spaces on lines
       .replace(/[ \t]+(\n|$)/gm, '$1')
-      // Remove leading spaces on each line (often from indentation)
-      .replace(/^[ \t]+/gm, '')
-      // Fix time stamps and bylines that often get isolated
-      .replace(/^(\d{1,2}:\d{2})$/gm, '[$1]')
-      // Join single words on their own line (often author names or timestamps)
-      .replace(/^([A-Za-z]+)(\n{2})/gm, '$1 ')
-      // Fix issues with numbered lists getting broken
-      .replace(/^(\d+)\.\s*\n+/gm, '$1. ')
       // Ensure code blocks have proper spacing
       .replace(/```\n/g, '```\n')
       .replace(/\n```/g, '\n```');
