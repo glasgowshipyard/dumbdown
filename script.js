@@ -1,5 +1,5 @@
 /**
- * Dumbdown - Main JavaScript
+ * Dumbdown Enhanced - Main JavaScript
  * Handles conversion of rich text to the Dumbdown format with special handling for news articles
  */
 
