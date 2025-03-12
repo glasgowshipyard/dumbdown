@@ -23,124 +23,168 @@ app.post('/convert', (req, res) => {
     return res.status(400).json({ error: 'No text provided' });
   }
 
-  console.log("Received conversion request");
-  console.log("Original HTML:", req.body.text);
-
   const convertedText = convertToDumbdown(req.body.text);
   res.json({ dumbdown: convertedText });
 });
 
 // Conversion Logic
 function convertToDumbdown(html) {
-  console.log("Starting conversion process...");
   const dom = new JSDOM(html);
   const document = dom.window.document;
 
-  // Convert Headers (h1 - h6)
+  console.log("Starting conversion process...");
+
+  // Remove unnecessary elements that often cause whitespace issues
+  document.querySelectorAll('script, style, meta').forEach(el => {
+    el.remove();
+  });
+
+  // Convert headers (h1 - h6)
   console.log("Converting headers...");
   document.querySelectorAll("h1, h2, h3, h4, h5, h6").forEach(el => {
-      let text = el.textContent.trim();
-      let underline = "";
-      if (el.tagName === "H1") underline = "=".repeat(text.length);
-      if (el.tagName === "H2") underline = "-".repeat(text.length);
-      el.outerHTML = underline ? `${text}\n${underline}` : text;
+    let text = el.textContent.trim();
+    let underline = "";
+    if (el.tagName === "H1") underline = "=".repeat(text.length);
+    if (el.tagName === "H2") underline = "-".repeat(text.length);
+    el.outerHTML = underline ? `${text}\n${underline}` : text;
   });
 
-  // Convert Lists (Fixing Nesting & Numbering) - Bottom-up approach
+  // Convert Lists (Improved handling with depth-first processing)
   console.log("Converting lists...");
   
-  function getDepth(element) {
-      let depth = 0;
-      while (element.parentElement && (element.parentElement.tagName === "UL" || element.parentElement.tagName === "OL")) {
-          depth++;
-          element = element.parentElement;
-      }
-      return depth;
-  }
+  // Process lists from the deepest level first
+  const allLists = Array.from(document.querySelectorAll("ul, ol"));
+  const listsByDepth = {};
 
-  let allListItems = Array.from(document.querySelectorAll("li"));
-  allListItems.sort((a, b) => getDepth(b) - getDepth(a)); // Process from deepest level first
+  // Group lists by their nesting depth
+  allLists.forEach(list => {
+    let depth = 0;
+    let parent = list.parentElement;
+    while (parent) {
+      if (parent.tagName === 'UL' || parent.tagName === 'OL') depth++;
+      parent = parent.parentElement;
+    }
+    
+    if (!listsByDepth[depth]) listsByDepth[depth] = [];
+    listsByDepth[depth].push(list);
+    console.log(`Found ${list.tagName} at depth ${depth} with ${list.children.length} items`);
+  });
 
-  allListItems.forEach(li => {
-      let nestLevel = getDepth(li);
-      let isOrdered = li.parentElement.tagName === "OL";
-      let marker = isOrdered ? "1." : "-";
+  // Process from deepest to shallowest
+  const depths = Object.keys(listsByDepth).sort((a, b) => b - a);
+  depths.forEach(depth => {
+    listsByDepth[depth].forEach(list => {
+      const isOrdered = list.tagName === 'OL';
+      let itemIndex = 1;
       
-      let prefix = "";
-      if (nestLevel > 1) {
+      // Process direct children only
+      const items = Array.from(list.children).filter(el => el.tagName === 'LI');
+      
+      items.forEach(li => {
+        // Calculate true nesting level
+        let nestLevel = parseInt(depth) + 1;
+        
+        let marker = isOrdered ? `${itemIndex}.` : "-";
+        
+        // Indentation logic
+        let prefix = "";
+        if (nestLevel > 1) {
           prefix = "  ".repeat(nestLevel - 1) + "-- ";
-      }
-      
-      console.log(`List item: ${li.textContent.trim()} (Nest level: ${nestLevel}, Prefix: "${prefix}", Marker: "${marker}")`);
-      
-      const content = li.textContent.trim();
-      li.outerHTML = `\n${prefix}${marker} ${content}`;
+        }
+        
+        console.log(`List item: ${li.textContent.trim()} (Nest level: ${nestLevel}, Prefix: "${prefix}", Marker: "${marker}")`);
+        
+        // Get just the direct text content of this li, not including nested lists
+        let directContent = '';
+        Array.from(li.childNodes).forEach(node => {
+          if (node.nodeType === 3) { // Text node
+            directContent += node.textContent;
+          } else if (node.nodeType === 1 && node.tagName !== 'UL' && node.tagName !== 'OL') {
+            directContent += node.textContent;
+          }
+        });
+        
+        // Replace this li with formatted content
+        const newContent = `\n${prefix}${marker} ${directContent.trim()}`;
+        
+        // Keep nested lists intact by moving them after this item
+        const nestedLists = Array.from(li.querySelectorAll('ul, ol'));
+        if (nestedLists.length > 0) {
+          const placeholder = document.createTextNode(newContent);
+          li.parentNode.insertBefore(placeholder, li);
+          nestedLists.forEach(nestedList => {
+            li.parentNode.insertBefore(nestedList, li);
+          });
+          li.remove();
+        } else {
+          li.outerHTML = newContent;
+        }
+        
+        if (isOrdered && nestLevel === 1) itemIndex++;
+      });
+    });
   });
 
-  // Convert Bold and Italics to Uppercase
-  console.log("Converting bold and italics...");
+  // Convert bold and italics to UPPERCASE
+  console.log("Converting text formatting...");
   document.querySelectorAll("b, strong, i, em").forEach(el => {
-      let text = el.textContent.trim().toUpperCase();
-      console.log(`Converting text to uppercase: ${text}`);
-      el.outerHTML = text;
+    let text = el.textContent.trim().toUpperCase();
+    el.outerHTML = text;
   });
 
-  // Convert Blockquotes
+  // Convert blockquotes
   console.log("Converting blockquotes...");
   document.querySelectorAll("blockquote").forEach(el => {
-      let content = el.textContent.trim();
-      console.log(`Blockquote: ${content}`);
-      el.outerHTML = `\n\n"${content}"\n\n`;
+    let content = el.textContent.trim();
+    el.outerHTML = `\n\n"${content}"\n\n`;
   });
 
-  // Convert Code Blocks
+  // Convert code blocks
   console.log("Converting code blocks...");
   document.querySelectorAll("pre").forEach(el => {
-      let content = el.textContent.trim();
-      console.log(`Code block detected: ${content}`);
-      el.outerHTML = `\n\n\`\`\`\n${content}\n\`\`\`\n\n`;
+    let content = el.textContent.trim();
+    el.outerHTML = `\n\n\`\`\`\n${content}\n\`\`\`\n\n`;
   });
 
-  // Convert Inline Code
-  console.log("Converting inline code...");
+  // Convert inline code
   document.querySelectorAll("code").forEach(el => {
+    // Skip if already inside a pre element
+    if (el.parentElement.tagName !== 'PRE') {
       let content = el.textContent.trim();
-      console.log(`Inline code detected: ${content}`);
       el.outerHTML = "`" + content + "`";
+    }
   });
 
-  // Convert Links to Plain URLs
+  // Convert links
   console.log("Converting links...");
   document.querySelectorAll("a").forEach(el => {
-      let href = el.href || "#";
-      console.log(`Extracting link: ${href}`);
-      el.outerHTML = href;
+    let text = el.textContent.trim();
+    let href = el.href || "#";
+    el.outerHTML = `[${text}](${href})`;
   });
 
-  // Convert Callouts
+  // Handle callouts
   console.log("Converting callouts...");
   document.querySelectorAll("div").forEach(el => {
-      let text = el.textContent.trim();
-      if (/^\[WARNING\]/i.test(text)) {
-          console.log(`Warning detected: ${text}`);
-          el.outerHTML = `\n\n[WARNING] ${text.replace(/^\[WARNING\]\s*/i, '')}\n\n`;
-      } else if (/^\[NOTE\]/i.test(text)) {
-          console.log(`Note detected: ${text}`);
-          el.outerHTML = `\n\n[NOTE] ${text.replace(/^\[NOTE\]\s*/i, '')}\n\n`;
-      } else if (/^>>/i.test(text)) {
-          console.log(`Insight detected: ${text}`);
-          el.outerHTML = `\n\n>> ${text.replace(/^>>\s*/, '')}\n\n`;
-      } else if (/^!!/i.test(text)) {
-          console.log(`Action required detected: ${text}`);
-          el.outerHTML = `\n\n!! ${text.replace(/^!!\s*/, '')}\n\n`;
-      }
+    let text = el.textContent.trim();
+    if (/^\[WARNING\]/i.test(text)) {
+      el.outerHTML = `\n\n[WARNING] ${text.replace(/^\[WARNING\]\s*/i, '')}\n\n`;
+    } else if (/^\[NOTE\]/i.test(text)) {
+      el.outerHTML = `\n\n[NOTE] ${text.replace(/^\[NOTE\]\s*/i, '')}\n\n`;
+    } else if (/^>>/i.test(text)) {
+      el.outerHTML = `\n\n>> ${text.replace(/^>>\s*/, '')}\n\n`;
+    } else if (/^!!/i.test(text)) {
+      el.outerHTML = `\n\n!! ${text.replace(/^!!\s*/, '')}\n\n`;
+    }
   });
 
-  console.log("Conversion complete.");
+  // Normalize whitespace
+  let result = document.body.textContent
+    .replace(/\n{3,}/g, "\n\n")  // Replace 3+ newlines with just 2
+    .replace(/[ \t]+(\n|$)/gm, '$1')  // Remove trailing spaces
+    .trim();
 
-  // Remove remaining HTML tags but keep formatting
-  let result = document.body.textContent.replace(/\n{3,}/g, "\n\n").trim();
-  console.log("Final Output:", result);
+  console.log("Conversion complete!");
   return result;
 }
 
