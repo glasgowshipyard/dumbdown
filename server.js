@@ -23,16 +23,21 @@ app.post('/convert', (req, res) => {
     return res.status(400).json({ error: 'No text provided' });
   }
 
+  console.log("Received conversion request");
+  console.log("Original HTML:", req.body.text);
+
   const convertedText = convertToDumbdown(req.body.text);
   res.json({ dumbdown: convertedText });
 });
 
 // Conversion Logic
 function convertToDumbdown(html) {
+  console.log("Starting conversion process...");
   const dom = new JSDOM(html);
   const document = dom.window.document;
 
-  // Convert headers (h1 - h6)
+  // Convert Headers (h1 - h6)
+  console.log("Converting headers...");
   document.querySelectorAll("h1, h2, h3, h4, h5, h6").forEach(el => {
       let text = el.textContent.trim();
       let underline = "";
@@ -41,7 +46,8 @@ function convertToDumbdown(html) {
       el.outerHTML = underline ? `${text}\n${underline}` : text;
   });
 
-  // Convert lists (handle indentation for nested lists properly)
+  // Convert Lists (Handle Indentation for Nested Lists)
+  console.log("Converting lists...");
   document.querySelectorAll("ul, ol").forEach(list => {
       let isOrdered = list.tagName === "OL";
       let itemIndex = 1;
@@ -54,57 +60,77 @@ function convertToDumbdown(html) {
           }
           let marker = isOrdered ? `${itemIndex}.` : "-";
           let indentation = "  ".repeat(nestLevel - 1) + (nestLevel > 0 ? "-- " : "");
+          console.log(`List item: ${li.textContent.trim()} (Nest level: ${nestLevel})`);
           li.outerHTML = `${indentation}${marker} ${li.textContent.trim()}`;
           if (isOrdered && nestLevel === 0) itemIndex++;
       });
   });
 
-  // Convert bold and italics to UPPERCASE (instead of Markdown)
+  // Convert Bold and Italics to Uppercase
+  console.log("Converting bold and italics...");
   document.querySelectorAll("b, strong, i, em").forEach(el => {
       let text = el.textContent.trim().toUpperCase();
+      console.log(`Converting text to uppercase: ${text}`);
       el.outerHTML = text;
   });
 
-  // Convert blockquotes
+  // Convert Blockquotes
+  console.log("Converting blockquotes...");
   document.querySelectorAll("blockquote").forEach(el => {
       let content = el.textContent.trim();
+      console.log(`Blockquote: ${content}`);
       el.outerHTML = `\n\n"${content}"\n\n`;
   });
 
-  // Convert code blocks
+  // Convert Code Blocks
+  console.log("Converting code blocks...");
   document.querySelectorAll("pre").forEach(el => {
       let content = el.textContent.trim();
+      console.log(`Code block detected: ${content}`);
       el.outerHTML = `\n\n\`\`\`\n${content}\n\`\`\`\n\n`;
   });
 
-  // Convert inline code
+  // Convert Inline Code
+  console.log("Converting inline code...");
   document.querySelectorAll("code").forEach(el => {
       let content = el.textContent.trim();
+      console.log(`Inline code detected: ${content}`);
       el.outerHTML = "`" + content + "`";
   });
 
-  // Convert links (just extract the URL instead of Markdown format)
+  // Convert Links to Plain URLs
+  console.log("Converting links...");
   document.querySelectorAll("a").forEach(el => {
       let href = el.href || "#";
+      console.log(`Extracting link: ${href}`);
       el.outerHTML = href;
   });
 
-  // Handle callouts
+  // Convert Callouts
+  console.log("Converting callouts...");
   document.querySelectorAll("div").forEach(el => {
       let text = el.textContent.trim();
       if (/^\[WARNING\]/i.test(text)) {
+          console.log(`Warning detected: ${text}`);
           el.outerHTML = `\n\n[WARNING] ${text.replace(/^\[WARNING\]\s*/i, '')}\n\n`;
       } else if (/^\[NOTE\]/i.test(text)) {
+          console.log(`Note detected: ${text}`);
           el.outerHTML = `\n\n[NOTE] ${text.replace(/^\[NOTE\]\s*/i, '')}\n\n`;
       } else if (/^>>/i.test(text)) {
+          console.log(`Insight detected: ${text}`);
           el.outerHTML = `\n\n>> ${text.replace(/^>>\s*/, '')}\n\n`;
       } else if (/^!!/i.test(text)) {
+          console.log(`Action required detected: ${text}`);
           el.outerHTML = `\n\n!! ${text.replace(/^!!\s*/, '')}\n\n`;
       }
   });
 
+  console.log("Conversion complete.");
+
   // Remove remaining HTML tags but keep formatting
-  return document.body.textContent.replace(/\n{3,}/g, "\n\n").trim();
+  let result = document.body.textContent.replace(/\n{3,}/g, "\n\n").trim();
+  console.log("Final Output:", result);
+  return result;
 }
 
 // Start Server
