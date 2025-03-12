@@ -49,7 +49,7 @@ function convertToDumbdown(html) {
     el.outerHTML = underline ? `${text}\n${underline}` : text;
   });
 
-  // Convert Lists (Improved handling with depth-first processing)
+    // Convert Lists (Fixed indentation)
     console.log("Converting lists...");
 
     // Process lists from the deepest level first
@@ -84,23 +84,18 @@ function convertToDumbdown(html) {
         // Calculate true nesting level
         let nestLevel = parseInt(depth) + 1;
         
-        // Fixed marker logic - only apply marker for top-level items
-        let marker = "";
+        // Build the formatted content directly
+        let formattedLine = '';
+        
         if (nestLevel === 1) {
-            // Top level items get a marker with NO indentation
-            marker = isOrdered ? `${itemIndex}.` : "-";
+            // Top level items - NO indentation
+            formattedLine = isOrdered ? `${itemIndex}. ` : "- ";
+        } else {
+            // Nested items - exactly 2 spaces before --
+            formattedLine = "  -- ";
         }
         
-        // Fixed indentation logic - no marker for nested items, just prefix
-        let prefix = "";
-        if (nestLevel > 1) {
-            // Exactly 2 spaces for nested items
-            prefix = "  -- ";
-        }
-        
-        console.log(`List item: ${li.textContent.trim()} (Nest level: ${nestLevel}, Prefix: "${prefix}", Marker: "${marker}")`);
-        
-        // Get just the direct text content of this li, not including nested lists
+        // Get just the direct text content
         let directContent = '';
         Array.from(li.childNodes).forEach(node => {
             if (node.nodeType === 3) { // Text node
@@ -110,22 +105,22 @@ function convertToDumbdown(html) {
             }
         });
         
-        // Replace with formatted content - no extra spaces for top level items
-        const newContent = nestLevel === 1 
-            ? `${marker} ${directContent.trim()}` 
-            : `${prefix}${directContent.trim()}`;
+        // Create the final content
+        formattedLine += directContent.trim();
         
-        // Keep nested lists intact by moving them after this item
+        // Replace the element in the DOM
+        const placeholder = document.createTextNode(formattedLine);
+        
+        // Handle nested lists
         const nestedLists = Array.from(li.querySelectorAll('ul, ol'));
         if (nestedLists.length > 0) {
-            const placeholder = document.createTextNode(newContent);
             li.parentNode.insertBefore(placeholder, li);
             nestedLists.forEach(nestedList => {
             li.parentNode.insertBefore(nestedList, li);
             });
             li.remove();
         } else {
-            li.outerHTML = newContent;
+            li.outerHTML = formattedLine;
         }
         
         if (isOrdered && nestLevel === 1) itemIndex++;
