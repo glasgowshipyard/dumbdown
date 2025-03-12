@@ -50,51 +50,52 @@ function convertToDumbdown(html) {
   });
 
   // Convert Lists (Improved handling with depth-first processing)
-  console.log("Converting lists...");
-  
-  // Process lists from the deepest level first
-  const allLists = Array.from(document.querySelectorAll("ul, ol"));
-  const listsByDepth = {};
+    console.log("Converting lists...");
 
-  // Group lists by their nesting depth
-  allLists.forEach(list => {
+    // Process lists from the deepest level first
+    const allLists = Array.from(document.querySelectorAll("ul, ol"));
+    const listsByDepth = {};
+
+    // Group lists by their nesting depth
+    allLists.forEach(list => {
     let depth = 0;
     let parent = list.parentElement;
     while (parent) {
-      if (parent.tagName === 'UL' || parent.tagName === 'OL') depth++;
-      parent = parent.parentElement;
+        if (parent.tagName === 'UL' || parent.tagName === 'OL') depth++;
+        parent = parent.parentElement;
     }
     
     if (!listsByDepth[depth]) listsByDepth[depth] = [];
     listsByDepth[depth].push(list);
     console.log(`Found ${list.tagName} at depth ${depth} with ${list.children.length} items`);
-  });
+    });
 
-  // Process from deepest to shallowest
-  const depths = Object.keys(listsByDepth).sort((a, b) => b - a);
-  depths.forEach(depth => {
+    // Process from deepest to shallowest
+    const depths = Object.keys(listsByDepth).sort((a, b) => b - a);
+    depths.forEach(depth => {
     listsByDepth[depth].forEach(list => {
-      const isOrdered = list.tagName === 'OL';
-      let itemIndex = 1;
-      
-      // Process direct children only
-      const items = Array.from(list.children).filter(el => el.tagName === 'LI');
-      
-      items.forEach(li => {
+        const isOrdered = list.tagName === 'OL';
+        let itemIndex = 1;
+        
+        // Process direct children only
+        const items = Array.from(list.children).filter(el => el.tagName === 'LI');
+        
+        items.forEach(li => {
         // Calculate true nesting level
         let nestLevel = parseInt(depth) + 1;
         
         // Fixed marker logic - only apply marker for top-level items
         let marker = "";
         if (nestLevel === 1) {
-          // Top level items get a marker
-          marker = isOrdered ? `${itemIndex}.` : "-";
+            // Top level items get a marker with NO indentation
+            marker = isOrdered ? `${itemIndex}.` : "-";
         }
         
         // Fixed indentation logic - no marker for nested items, just prefix
         let prefix = "";
         if (nestLevel > 1) {
-          prefix = "  ".repeat(nestLevel - 1) + "--";
+            // Exactly 2 spaces for nested items
+            prefix = "  -- ";
         }
         
         console.log(`List item: ${li.textContent.trim()} (Nest level: ${nestLevel}, Prefix: "${prefix}", Marker: "${marker}")`);
@@ -102,33 +103,35 @@ function convertToDumbdown(html) {
         // Get just the direct text content of this li, not including nested lists
         let directContent = '';
         Array.from(li.childNodes).forEach(node => {
-          if (node.nodeType === 3) { // Text node
+            if (node.nodeType === 3) { // Text node
             directContent += node.textContent;
-          } else if (node.nodeType === 1 && node.tagName !== 'UL' && node.tagName !== 'OL') {
+            } else if (node.nodeType === 1 && node.tagName !== 'UL' && node.tagName !== 'OL') {
             directContent += node.textContent;
-          }
+            }
         });
         
-        // Replace this li with formatted content - no leading newline to reduce spacing
-        const newContent = `${prefix}${marker ? " " + marker : ""} ${directContent.trim()}`;
+        // Replace with formatted content - no extra spaces for top level items
+        const newContent = nestLevel === 1 
+            ? `${marker} ${directContent.trim()}` 
+            : `${prefix}${directContent.trim()}`;
         
         // Keep nested lists intact by moving them after this item
         const nestedLists = Array.from(li.querySelectorAll('ul, ol'));
         if (nestedLists.length > 0) {
-          const placeholder = document.createTextNode(newContent);
-          li.parentNode.insertBefore(placeholder, li);
-          nestedLists.forEach(nestedList => {
+            const placeholder = document.createTextNode(newContent);
+            li.parentNode.insertBefore(placeholder, li);
+            nestedLists.forEach(nestedList => {
             li.parentNode.insertBefore(nestedList, li);
-          });
-          li.remove();
+            });
+            li.remove();
         } else {
-          li.outerHTML = newContent;
+            li.outerHTML = newContent;
         }
         
         if (isOrdered && nestLevel === 1) itemIndex++;
-      });
+        });
     });
-  });
+    });
 
   // Convert bold and italics to UPPERCASE
   console.log("Converting text formatting...");
