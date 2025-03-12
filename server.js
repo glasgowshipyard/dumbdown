@@ -182,68 +182,101 @@ function convertToDumbdown(html) {
     }
   });
 
-   // WITH THIS NEW INTELLIGENT SPACING LOGIC:
-  // Track previous element type for spacing
-  let prevElementType = null;
-  let processedContent = '';
-  let lines = document.body.textContent.trim().split('\n');
+        // INTELLIGENT SPACING LOGIC:
+        // Track previous element type for spacing
+        let prevElementType = null;
+        let currentHeader = null;
+        let processedContent = '';
+        let lines = document.body.textContent.trim().split('\n');
 
-  lines.forEach((line, index) => {
-    // Skip empty lines
-    if (!line.trim()) return;
-    
-    // Determine current element type
-    let currentType = 'text'; // Default
-    
-    if (line.match(/^[=]+$/)) {
-      currentType = 'h1-underline';
-    } else if (line.match(/^[-]+$/)) {
-      currentType = 'h2-underline';
-    } else if (line.match(/^-\s/)) {
-      currentType = 'ul';
-    } else if (line.match(/^\s+--\s/)) {
-      currentType = 'ul-nested';
-    } else if (line.match(/^\d+\.\s/)) {
-      currentType = 'ol';
-    } else if (line.match(/^```/)) {
-      currentType = 'code';
-    } else if (line.match(/^"/)) {
-      currentType = 'blockquote';
-    } else if (line.match(/^\[/)) {
-      currentType = 'callout';
-    } else if (line.match(/^>>/)) {
-      currentType = 'insight';
-    } else if (line.match(/^!!/)) {
-      currentType = 'action';
-    }
-    
-    // Determine if we need a line break
-    let needsBreak = false;
-    
-    // Always add break after header underlines
-    if (prevElementType === 'h1-underline' || prevElementType === 'h2-underline') {
-      needsBreak = true;
-    }
-    // Add break between different content types (but not between nested list items and their parents)
-    else if (prevElementType && 
-            prevElementType !== currentType && 
-            !(prevElementType === 'ul' && currentType === 'ul-nested') &&
-            !(prevElementType === 'ol' && currentType === 'ul-nested')) {
-      needsBreak = true;
-    }
-    
-    // Add the line with appropriate spacing
-    if (needsBreak && processedContent) {
-      processedContent += '\n\n';
-    } else if (processedContent) {
-      processedContent += '\n';
-    }
-    
-    processedContent += line;
-    prevElementType = currentType;
-  });
+        // First pass: fix indentation for list items
+        let fixedLines = [];
+        for (let i = 0; i < lines.length; i++) {
+            let line = lines[i];
+            if (!line.trim()) continue;
+            
+            // Fix indentation for top-level list items (remove leading spaces)
+            if (line.match(/^\s+- /)) {
+                line = line.replace(/^\s+/, '') + ' ';
+            }
+            
+            // Fix indentation for nested list items (ensure exactly 2 spaces)
+            if (line.match(/^\s+--\s/)) {
+                line = '  -- ' + line.replace(/^\s+--\s+/, '');
+            }
+            
+            fixedLines.push(line);
+        }
 
-  let result = processedContent;
+        // Second pass: handle spacing between different content types
+        for (let i = 0; i < fixedLines.length; i++) {
+            let line = fixedLines[i];
+            
+            // Determine current element type
+            let currentType = 'text'; // Default
+            
+            if (line.match(/^[=]+$/)) {
+                currentType = 'h1-underline';
+            } else if (line.match(/^[-]+$/)) {
+                currentType = 'h2-underline';
+            } else if (line.match(/^- /)) {
+                currentType = 'ul';
+            } else if (line.match(/^  -- /)) {
+                currentType = 'ul-nested';
+            } else if (line.match(/^\d+\./)) {
+                currentType = 'ol';
+            } else if (line.match(/^```/)) {
+                currentType = 'code';
+            } else if (line.match(/^"/)) {
+                currentType = 'blockquote';
+            } else if (line.match(/^\[/)) {
+                currentType = 'callout';
+            } else if (line.match(/^>>/)) {
+                currentType = 'insight';
+            } else if (line.match(/^!!/)) {
+                currentType = 'action';
+            }
+            
+            // Handle header and underline pairs specially
+            if ((currentType === 'text' && fixedLines[i+1] && fixedLines[i+1].match(/^[=]+$/)) || 
+                (currentType === 'text' && fixedLines[i+1] && fixedLines[i+1].match(/^[-]+$/))) {
+                // This is a header text followed by an underline
+                if (processedContent) processedContent += '\n\n';
+                processedContent += line + '\n' + fixedLines[i+1];
+                i++; // Skip the underline since we've already processed it
+                prevElementType = (fixedLines[i].match(/^[=]+$/)) ? 'h1-underline' : 'h2-underline';
+                continue;
+            }
+            
+            // Determine if we need a line break
+            let needsBreak = false;
+            
+            // Always add break after header underlines
+            if (prevElementType === 'h1-underline' || prevElementType === 'h2-underline') {
+                needsBreak = true;
+            }
+            // Add break between different content types (but not between related items)
+            else if (prevElementType && 
+                    prevElementType !== currentType && 
+                    !(prevElementType === 'ul' && currentType === 'ul-nested') &&
+                    !(prevElementType === 'ol' && currentType === 'ul-nested') &&
+                    !(currentType === 'h1-underline' || currentType === 'h2-underline')) {
+                needsBreak = true;
+            }
+            
+            // Add the line with appropriate spacing
+            if (needsBreak && processedContent) {
+                processedContent += '\n\n';
+            } else if (processedContent) {
+                processedContent += '\n';
+            }
+            
+            processedContent += line;
+            prevElementType = currentType;
+        }
+
+        let result = processedContent;
+        // end intelligent spacing
 
   console.log("Conversion complete!");
   return result;
