@@ -83,11 +83,10 @@ function convertToDumbdown(html) {
       el.outerHTML = "`" + content + "`";
   });
 
-  // Convert links
+  // Convert links (just extract the URL instead of Markdown format)
   document.querySelectorAll("a").forEach(el => {
-      let linkText = el.textContent.trim();
       let href = el.href || "#";
-      el.outerHTML = `[${linkText}](${href})`;
+      el.outerHTML = href;
   });
 
   // Handle callouts
