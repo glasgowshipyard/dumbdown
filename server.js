@@ -46,7 +46,7 @@ function convertToDumbdown(html) {
       el.outerHTML = underline ? `${text}\n${underline}` : text;
   });
 
-  // Convert Lists (Handle Indentation for Nested Lists)
+  // Convert Lists (Fixing Nesting & Numbering)
   console.log("Converting lists...");
   document.querySelectorAll("ul, ol").forEach(list => {
       let isOrdered = list.tagName === "OL";
@@ -59,7 +59,7 @@ function convertToDumbdown(html) {
               parent = parent.parentElement;
           }
           let marker = isOrdered ? `${itemIndex}.` : "-";
-          let indentation = "  ".repeat(nestLevel - 1) + (nestLevel > 0 ? "-- " : "");
+          let indentation = "  ".repeat(nestLevel) + (nestLevel > 0 ? "-- " : "");
           console.log(`List item: ${li.textContent.trim()} (Nest level: ${nestLevel})`);
           li.outerHTML = `${indentation}${marker} ${li.textContent.trim()}`;
           if (isOrdered && nestLevel === 0) itemIndex++;
