@@ -182,78 +182,71 @@ function convertToDumbdown(html) {
     }
   });
 
-  function convertToDumbdown(html) {
-    const dom = new JSDOM(html);
-    const document = dom.window.document;
-  
-    console.log("Starting conversion process...");
-  
-    // INTELLIGENT SPACING LOGIC:
-    // Track previous element type for spacing
-    let prevElementType = null;
-    let processedContent = '';
-    let lines = document.body.textContent.trim().split('\n');
-  
-    lines.forEach((line, index) => {
-      // Skip empty lines
-      if (!line.trim()) return;
-      
-      // Determine current element type
-      let currentType = 'text'; // Default
-      
-      if (line.match(/^[=]+$/)) {
-        currentType = 'h1-underline';
-      } else if (line.match(/^[-]+$/)) {
-        currentType = 'h2-underline';
-      } else if (line.match(/^-\s/)) {
-        currentType = 'ul';
-      } else if (line.match(/^\s+--\s/)) {
-        currentType = 'ul-nested';
-      } else if (line.match(/^\d+\.\s/)) {
-        currentType = 'ol';
-      } else if (line.match(/^```/)) {
-        currentType = 'code';
-      } else if (line.match(/^"/)) {
-        currentType = 'blockquote';
-      } else if (line.match(/^\[/)) {
-        currentType = 'callout';
-      } else if (line.match(/^>>/)) {
-        currentType = 'insight';
-      } else if (line.match(/^!!/)) {
-        currentType = 'action';
-      }
-      
-      // Determine if we need a line break
-      let needsBreak = false;
-      
-      // Always add break after header underlines
-      if (prevElementType === 'h1-underline' || prevElementType === 'h2-underline') {
-        needsBreak = true;
-      }
-      // Add break between different content types (but not between nested list items and their parents)
-      else if (prevElementType && 
-              prevElementType !== currentType && 
-              !(prevElementType === 'ul' && currentType === 'ul-nested') &&
-              !(prevElementType === 'ol' && currentType === 'ul-nested')) {
-        needsBreak = true;
-      }
-      
-      // Add the line with appropriate spacing
-      if (needsBreak && processedContent) {
-        processedContent += '\n\n';
-      } else if (processedContent) {
-        processedContent += '\n';
-      }
-      
-      processedContent += line;
-      prevElementType = currentType;
-    });
-  
-    let result = processedContent;
+   // WITH THIS NEW INTELLIGENT SPACING LOGIC:
+  // Track previous element type for spacing
+  let prevElementType = null;
+  let processedContent = '';
+  let lines = document.body.textContent.trim().split('\n');
+
+  lines.forEach((line, index) => {
+    // Skip empty lines
+    if (!line.trim()) return;
     
-    console.log("Conversion complete!");
-    return result;
-  }
+    // Determine current element type
+    let currentType = 'text'; // Default
+    
+    if (line.match(/^[=]+$/)) {
+      currentType = 'h1-underline';
+    } else if (line.match(/^[-]+$/)) {
+      currentType = 'h2-underline';
+    } else if (line.match(/^-\s/)) {
+      currentType = 'ul';
+    } else if (line.match(/^\s+--\s/)) {
+      currentType = 'ul-nested';
+    } else if (line.match(/^\d+\.\s/)) {
+      currentType = 'ol';
+    } else if (line.match(/^```/)) {
+      currentType = 'code';
+    } else if (line.match(/^"/)) {
+      currentType = 'blockquote';
+    } else if (line.match(/^\[/)) {
+      currentType = 'callout';
+    } else if (line.match(/^>>/)) {
+      currentType = 'insight';
+    } else if (line.match(/^!!/)) {
+      currentType = 'action';
+    }
+    
+    // Determine if we need a line break
+    let needsBreak = false;
+    
+    // Always add break after header underlines
+    if (prevElementType === 'h1-underline' || prevElementType === 'h2-underline') {
+      needsBreak = true;
+    }
+    // Add break between different content types (but not between nested list items and their parents)
+    else if (prevElementType && 
+            prevElementType !== currentType && 
+            !(prevElementType === 'ul' && currentType === 'ul-nested') &&
+            !(prevElementType === 'ol' && currentType === 'ul-nested')) {
+      needsBreak = true;
+    }
+    
+    // Add the line with appropriate spacing
+    if (needsBreak && processedContent) {
+      processedContent += '\n\n';
+    } else if (processedContent) {
+      processedContent += '\n';
+    }
+    
+    processedContent += line;
+    prevElementType = currentType;
+  });
+
+  let result = processedContent;
+
+  console.log("Conversion complete!");
+  return result;
 }
 
 // Start Server
