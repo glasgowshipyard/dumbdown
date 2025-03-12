@@ -47,24 +47,43 @@ function convertToDumbdown(html) {
   });
 
   // Convert Lists (Fixing Nesting & Numbering)
-  console.log("Converting lists...");
-  document.querySelectorAll("ul, ol").forEach(list => {
-      let isOrdered = list.tagName === "OL";
-      let itemIndex = 1;
-      list.querySelectorAll("li").forEach(li => {
-          let nestLevel = 0;
-          let parent = li.parentElement;
-          while (parent && (parent.tagName === "UL" || parent.tagName === "OL")) {
-              nestLevel++;
-              parent = parent.parentElement;
-          }
-          let marker = isOrdered ? `${itemIndex}.` : "-";
-          let indentation = "  ".repeat(nestLevel) + (nestLevel > 0 ? "-- " : "");
-          console.log(`List item: ${li.textContent.trim()} (Nest level: ${nestLevel})`);
-          li.outerHTML = `${indentation}${marker} ${li.textContent.trim()}`;
-          if (isOrdered && nestLevel === 0) itemIndex++;
-      });
-  });
+console.log("Converting lists...");
+document.querySelectorAll("ul, ol").forEach(list => {
+    let isOrdered = list.tagName === "OL";
+    let itemIndex = 1;
+    
+    // First collect all items to avoid DOM modification during iteration
+    const items = Array.from(list.querySelectorAll("li"));
+    
+    items.forEach(li => {
+        let nestLevel = 0;
+        let parent = li.parentElement;
+        while (parent && (parent.tagName === "UL" || parent.tagName === "OL")) {
+            nestLevel++;
+            parent = parent.parentElement;
+        }
+        
+        let marker = isOrdered ? `${itemIndex}.` : "-";
+        
+        // Fix the indentation logic - only add -- for nested items, don't add spaces AND --
+        let prefix = "";
+        if (nestLevel > 1) {
+            // For deeply nested items, add appropriate indentation
+            prefix = "  ".repeat(nestLevel - 1) + "-- ";
+        } else if (nestLevel === 1) {
+            // For top-level items, just add the marker without extra indentation
+            prefix = "";
+        }
+        
+        console.log(`List item: ${li.textContent.trim()} (Nest level: ${nestLevel}, Prefix: "${prefix}", Marker: "${marker}")`);
+        
+        // Preserve the content structure better
+        const content = li.innerHTML.trim();
+        li.outerHTML = `${prefix}${marker} ${content}`;
+        
+        if (isOrdered && nestLevel === 1) itemIndex++;
+    });
+});
 
   // Convert Bold and Italics to Uppercase
   console.log("Converting bold and italics...");
