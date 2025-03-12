@@ -55,7 +55,7 @@ function convertToDumbdown(html) {
           let marker = isOrdered ? `${itemIndex}.` : "-";
           let indentation = "  ".repeat(nestLevel - 1) + (nestLevel > 0 ? "-- " : "");
           li.outerHTML = `${indentation}${marker} ${li.textContent.trim()}`;
-          if (isOrdered) itemIndex++;
+          if (isOrdered && nestLevel === 0) itemIndex++;
       });
   });
 

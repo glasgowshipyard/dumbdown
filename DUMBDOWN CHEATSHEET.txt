@@ -23,10 +23,8 @@ Ordered:
 2. Another item  
    — Sub-item  
 
-- Dash - for main bullets, em dash — for sub-bullets  
+- Dash - for main bullets, double dash -- for sub-bullets  
 - Simple, clear, no indentation rules  
-
-
 
 LABELS (CONTEXT MARKERS)  
 
