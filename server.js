@@ -46,7 +46,7 @@ function convertToDumbdown(html) {
       el.outerHTML = underline ? `${text}\n${underline}` : text;
   });
 
-  // Convert Lists (Fixing Nesting & Numbering)
+// Convert Lists (Fixing Nesting & Numbering)
 console.log("Converting lists...");
 document.querySelectorAll("ul, ol").forEach(list => {
     let isOrdered = list.tagName === "OL";
@@ -65,20 +65,20 @@ document.querySelectorAll("ul, ol").forEach(list => {
         
         let marker = isOrdered ? `${itemIndex}.` : "-";
         
-        // Fix the indentation logic - only add -- for nested items, don't add spaces AND --
+        // Fix the indentation logic
         let prefix = "";
-        if (nestLevel > 1) {
-            // For deeply nested items, add appropriate indentation
-            prefix = "  ".repeat(nestLevel - 1) + "-- ";
-        } else if (nestLevel === 1) {
-            // For top-level items, just add the marker without extra indentation
+        if (nestLevel === 1) {
+            // Top-level items get just the marker, no indentation or --
             prefix = "";
+        } else if (nestLevel > 1) {
+            // Nested items get indentation and --
+            prefix = "  ".repeat(nestLevel - 1) + "-- ";
         }
         
         console.log(`List item: ${li.textContent.trim()} (Nest level: ${nestLevel}, Prefix: "${prefix}", Marker: "${marker}")`);
         
         // Preserve the content structure better
-        const content = li.innerHTML.trim();
+        const content = li.textContent.trim();
         li.outerHTML = `${prefix}${marker} ${content}`;
         
         if (isOrdered && nestLevel === 1) itemIndex++;
