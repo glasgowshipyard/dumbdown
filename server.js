@@ -84,17 +84,12 @@ function convertToDumbdown(html) {
         // Calculate true nesting level
         let nestLevel = parseInt(depth) + 1;
         
-        // Fixed marker logic - only apply marker for top-level items
-        let marker = "";
-        if (nestLevel === 1) {
-          // Top level items get a marker
-          marker = isOrdered ? `${itemIndex}.` : "-";
-        }
+        let marker = isOrdered ? `${itemIndex}.` : "-";
         
-        // Fixed indentation logic - no marker for nested items, just prefix
+        // Indentation logic
         let prefix = "";
         if (nestLevel > 1) {
-          prefix = "  ".repeat(nestLevel - 1) + "--";
+          prefix = "  ".repeat(nestLevel - 1) + "-- ";
         }
         
         console.log(`List item: ${li.textContent.trim()} (Nest level: ${nestLevel}, Prefix: "${prefix}", Marker: "${marker}")`);
@@ -109,8 +104,8 @@ function convertToDumbdown(html) {
           }
         });
         
-        // Replace this li with formatted content - no leading newline to reduce spacing
-        const newContent = `${prefix}${marker ? " " + marker : ""} ${directContent.trim()}`;
+        // Replace this li with formatted content
+        const newContent = `\n${prefix}${marker} ${directContent.trim()}`;
         
         // Keep nested lists intact by moving them after this item
         const nestedLists = Array.from(li.querySelectorAll('ul, ol'));
@@ -141,14 +136,14 @@ function convertToDumbdown(html) {
   console.log("Converting blockquotes...");
   document.querySelectorAll("blockquote").forEach(el => {
     let content = el.textContent.trim();
-    el.outerHTML = `"${content}"`;
+    el.outerHTML = `\n\n"${content}"\n\n`;
   });
 
   // Convert code blocks
   console.log("Converting code blocks...");
   document.querySelectorAll("pre").forEach(el => {
     let content = el.textContent.trim();
-    el.outerHTML = `\`\`\`\n${content}\n\`\`\``;
+    el.outerHTML = `\n\n\`\`\`\n${content}\n\`\`\`\n\n`;
   });
 
   // Convert inline code
@@ -160,33 +155,34 @@ function convertToDumbdown(html) {
     }
   });
 
-  // Convert links - just extract the URL
+  // Convert links
   console.log("Converting links...");
   document.querySelectorAll("a").forEach(el => {
+    let text = el.textContent.trim();
     let href = el.href || "#";
-    el.outerHTML = href;
+    el.outerHTML = `[${text}](${href})`;
   });
 
-  // Handle callouts - reduce spacing around them
+  // Handle callouts
   console.log("Converting callouts...");
   document.querySelectorAll("div").forEach(el => {
     let text = el.textContent.trim();
     if (/^\[WARNING\]/i.test(text)) {
-      el.outerHTML = `[WARNING] ${text.replace(/^\[WARNING\]\s*/i, '')}`;
+      el.outerHTML = `\n\n[WARNING] ${text.replace(/^\[WARNING\]\s*/i, '')}\n\n`;
     } else if (/^\[NOTE\]/i.test(text)) {
-      el.outerHTML = `[NOTE] ${text.replace(/^\[NOTE\]\s*/i, '')}`;
+      el.outerHTML = `\n\n[NOTE] ${text.replace(/^\[NOTE\]\s*/i, '')}\n\n`;
     } else if (/^>>/i.test(text)) {
-      el.outerHTML = `>> ${text.replace(/^>>\s*/, '')}`;
+      el.outerHTML = `\n\n>> ${text.replace(/^>>\s*/, '')}\n\n`;
     } else if (/^!!/i.test(text)) {
-      el.outerHTML = `!! ${text.replace(/^!!\s*/, '')}`;
+      el.outerHTML = `\n\n!! ${text.replace(/^!!\s*/, '')}\n\n`;
     }
   });
 
-  // Normalize whitespace - reduce extra spacing
-  //let result = document.body.textContent
-  //  .replace(/\n{2,}/g, "\n")  // Replace 2+ newlines with just 1
-  //  .replace(/[ \t]+(\n|$)/gm, '$1')  // Remove trailing spaces
-  //  .trim();
+  // Normalize whitespace
+  let result = document.body.textContent
+    .replace(/\n{3,}/g, "\n\n")  // Replace 3+ newlines with just 2
+    .replace(/[ \t]+(\n|$)/gm, '$1')  // Remove trailing spaces
+    .trim();
 
   console.log("Conversion complete!");
   return result;
