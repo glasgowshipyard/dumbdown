@@ -41,9 +41,10 @@ function convertToDumbdown(html) {
       el.outerHTML = underline ? `${text}\n${underline}` : text;
   });
 
-  // Convert lists (handle indentation for nested lists)
+  // Convert lists (handle indentation for nested lists properly)
   document.querySelectorAll("ul, ol").forEach(list => {
       let isOrdered = list.tagName === "OL";
+      let itemIndex = 1;
       list.querySelectorAll("li").forEach(li => {
           let nestLevel = 0;
           let parent = li.parentElement;
@@ -51,16 +52,17 @@ function convertToDumbdown(html) {
               nestLevel++;
               parent = parent.parentElement;
           }
-          let marker = isOrdered ? "1." : "-";
-          let indentation = "  ".repeat(nestLevel - 1);
+          let marker = isOrdered ? `${itemIndex}.` : "-";
+          let indentation = "  ".repeat(nestLevel - 1) + (nestLevel > 0 ? "-- " : "");
           li.outerHTML = `${indentation}${marker} ${li.textContent.trim()}`;
+          if (isOrdered) itemIndex++;
       });
   });
 
-  // Convert bold and italics to UPPERCASE
+  // Convert bold and italics to UPPERCASE (instead of Markdown)
   document.querySelectorAll("b, strong, i, em").forEach(el => {
-      let text = el.textContent.trim();
-      el.outerHTML = text.toUpperCase();
+      let text = el.textContent.trim().toUpperCase();
+      el.outerHTML = text;
   });
 
   // Convert blockquotes
