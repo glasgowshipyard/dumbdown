@@ -46,36 +46,35 @@ function convertToDumbdown(html) {
       el.outerHTML = underline ? `${text}\n${underline}` : text;
   });
 
-  // Convert Lists (Fixing Nesting & Numbering)
+  // Convert Lists (Fixing Nesting & Numbering) - Bottom-up approach
   console.log("Converting lists...");
-  document.querySelectorAll("ul, ol").forEach(list => {
-      let isOrdered = list.tagName === "OL";
-      let itemIndex = 1;
-      const items = Array.from(list.querySelectorAll("li"));
+  
+  function getDepth(element) {
+      let depth = 0;
+      while (element.parentElement && (element.parentElement.tagName === "UL" || element.parentElement.tagName === "OL")) {
+          depth++;
+          element = element.parentElement;
+      }
+      return depth;
+  }
+
+  let allListItems = Array.from(document.querySelectorAll("li"));
+  allListItems.sort((a, b) => getDepth(b) - getDepth(a)); // Process from deepest level first
+
+  allListItems.forEach(li => {
+      let nestLevel = getDepth(li);
+      let isOrdered = li.parentElement.tagName === "OL";
+      let marker = isOrdered ? "1." : "-";
       
-      items.forEach(li => {
-          let nestLevel = 0;
-          let parent = li.parentElement;
-          while (parent && (parent.tagName === "UL" || parent.tagName === "OL")) {
-              nestLevel++;
-              parent = parent.parentElement;
-          }
-          
-          let marker = isOrdered ? `${itemIndex}.` : "-";
-          
-          // Corrected indentation logic
-          let prefix = "";
-          if (nestLevel > 1) {
-              prefix = "  ".repeat(nestLevel - 1) + "-- ";
-          }
-          
-          console.log(`List item: ${li.textContent.trim()} (Nest level: ${nestLevel}, Prefix: "${prefix}", Marker: "${marker}")`);
-          
-          const content = li.textContent.trim();
-          li.outerHTML = `${prefix}${marker} ${content}`;
-          
-          if (isOrdered && nestLevel === 1) itemIndex++;
-      });
+      let prefix = "";
+      if (nestLevel > 1) {
+          prefix = "  ".repeat(nestLevel - 1) + "-- ";
+      }
+      
+      console.log(`List item: ${li.textContent.trim()} (Nest level: ${nestLevel}, Prefix: "${prefix}", Marker: "${marker}")`);
+      
+      const content = li.textContent.trim();
+      li.outerHTML = `\n${prefix}${marker} ${content}`;
   });
 
   // Convert Bold and Italics to Uppercase
