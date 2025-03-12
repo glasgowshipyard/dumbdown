@@ -49,83 +49,85 @@ function convertToDumbdown(html) {
     el.outerHTML = underline ? `${text}\n${underline}` : text;
   });
 
-    // Convert Lists (Fixed indentation)
+    // Convert Lists (Fix indentation & ordered list continuation)
     console.log("Converting lists...");
 
     // Process lists from the deepest level first
     const allLists = Array.from(document.querySelectorAll("ul, ol"));
     const listsByDepth = {};
 
-    // Group lists by their nesting depth
+    // Track global ordered list index
+    let orderedListIndex = 1;
+
+    // Group lists by nesting depth
     allLists.forEach(list => {
-    let depth = 0;
-    let parent = list.parentElement;
-    while (parent) {
-        if (parent.tagName === 'UL' || parent.tagName === 'OL') depth++;
-        parent = parent.parentElement;
-    }
-    
-    if (!listsByDepth[depth]) listsByDepth[depth] = [];
-    listsByDepth[depth].push(list);
-    console.log(`Found ${list.tagName} at depth ${depth} with ${list.children.length} items`);
+        let depth = 0;
+        let parent = list.parentElement;
+        while (parent) {
+            if (parent.tagName === 'UL' || parent.tagName === 'OL') depth++;
+            parent = parent.parentElement;
+        }
+
+        if (!listsByDepth[depth]) listsByDepth[depth] = [];
+        listsByDepth[depth].push(list);
+        console.log(`Found ${list.tagName} at depth ${depth} with ${list.children.length} items`);
     });
 
     // Process from deepest to shallowest
     const depths = Object.keys(listsByDepth).sort((a, b) => b - a);
     depths.forEach(depth => {
-    listsByDepth[depth].forEach(list => {
-        const isOrdered = list.tagName === 'OL';
-        let itemIndex = 1;
-        
-        // Process direct children only
-        const items = Array.from(list.children).filter(el => el.tagName === 'LI');
-        
-        items.forEach(li => {
-        // Calculate true nesting level
-        let nestLevel = parseInt(depth) + 1;
-        
-        // Build the formatted content directly
-        let formattedLine = '';
-        
-        if (nestLevel === 1) {
-            // Top level items - NO indentation
-            formattedLine = isOrdered ? `${itemIndex}. ` : "- ";
-        } else {
-            // Nested items - exactly 2 spaces before --
-            formattedLine = "  -- ";
-        }
-        
-        // Get just the direct text content
-        let directContent = '';
-        Array.from(li.childNodes).forEach(node => {
-            if (node.nodeType === 3) { // Text node
-            directContent += node.textContent;
-            } else if (node.nodeType === 1 && node.tagName !== 'UL' && node.tagName !== 'OL') {
-            directContent += node.textContent;
-            }
-        });
-        
-        // Create the final content
-        formattedLine += directContent.trim();
-        
-        // Replace the element in the DOM
-        const placeholder = document.createTextNode(formattedLine);
-        
-        // Handle nested lists
-        const nestedLists = Array.from(li.querySelectorAll('ul, ol'));
-        if (nestedLists.length > 0) {
-            li.parentNode.insertBefore(placeholder, li);
-            nestedLists.forEach(nestedList => {
-            li.parentNode.insertBefore(nestedList, li);
+        listsByDepth[depth].forEach(list => {
+            const isOrdered = list.tagName === 'OL';
+
+            // Process direct children only
+            const items = Array.from(list.children).filter(el => el.tagName === 'LI');
+
+            items.forEach(li => {
+                // Calculate true nesting level
+                let nestLevel = parseInt(depth) + 1;
+
+                // Build the formatted content directly
+                let formattedLine = '';
+
+                if (nestLevel === 1) {
+                    // Top level items - NO indentation
+                    formattedLine = isOrdered ? `${orderedListIndex}. ` : "- ";
+                } else {
+                    // Nested items - EXACTLY 2 spaces before --
+                    formattedLine = "-- ";
+                }
+
+                // Get just the direct text content
+                let directContent = '';
+                Array.from(li.childNodes).forEach(node => {
+                    if (node.nodeType === 3) { // Text node
+                        directContent += node.textContent;
+                    } else if (node.nodeType === 1 && node.tagName !== 'UL' && node.tagName !== 'OL') {
+                        directContent += node.textContent;
+                    }
+                });
+
+                // Create the final content
+                formattedLine += directContent.trim();
+
+                // Replace the element in the DOM
+                const placeholder = document.createTextNode(formattedLine);
+
+                // Handle nested lists
+                const nestedLists = Array.from(li.querySelectorAll('ul, ol'));
+                if (nestedLists.length > 0) {
+                    li.parentNode.insertBefore(placeholder, li);
+                    nestedLists.forEach(nestedList => {
+                        li.parentNode.insertBefore(nestedList, li);
+                    });
+                    li.remove();
+                } else {
+                    li.outerHTML = formattedLine;
+                }
+
+                if (isOrdered && nestLevel === 1) orderedListIndex++; // Continue numbering properly
             });
-            li.remove();
-        } else {
-            li.outerHTML = formattedLine;
-        }
-        
-        if (isOrdered && nestLevel === 1) itemIndex++;
         });
-    });
     });
 
   // Convert bold and italics to UPPERCASE
