@@ -1,8 +1,8 @@
 document.addEventListener("DOMContentLoaded", function () {
   const inputField = document.getElementById("input");
   const outputField = document.getElementById("output");
-  const convertButton = document.getElementById("convert");
-  const copyButton = document.getElementById("copy");
+  const convertButton = document.getElementById("convert-button"); // Fixed ID
+  const copyButton = document.getElementById("copy-button"); // Fixed ID
 
   // Capture and preserve rich text formatting on paste
   inputField.addEventListener("paste", function (event) {
