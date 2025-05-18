@@ -1,16 +1,22 @@
-DUMBDOWN CHEATSHEET  
+DUMBDOWN CHEATSHEET  V2
 
-TITLES & HEADINGS  
+BEGINNING A DOCUMENT
 
-Title  
-=====  
++++ [top left]
 
-Subtitle  
--------- 
+ENDING A DOCUMENT
 
-- Title underlined with ====  
-- Subtitle underlined with ----
-- Auto-expands to match text length  
++++ [bottom right]
+
+TITLES & HEADINGS
+
+// Example Title  
+
+Text here
+
+/// Example Subtitle  
+
+Text  here  
 
 LISTS  
 
