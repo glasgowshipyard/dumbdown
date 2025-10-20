@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dumbdown - HTML to Markdown Converter</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .editor-pane {
+            font-family: 'Courier New', monospace;
+        }
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-900 to-slate-800 min-h-screen text-slate-100">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold mb-2 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                Dumbdown
+            </h1>
+            <p class="text-slate-400">Convert messy HTML into clean, readable Dumbdown format</p>
+        </div>
+
+        <!-- Main Container -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Input Section -->
+            <div class="flex flex-col">
+                <div class="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden flex flex-col h-full">
+                    <div class="bg-slate-700 px-4 py-3 border-b border-slate-600">
+                        <h2 class="font-semibold text-sm text-slate-300">Input: HTML</h2>
+                        <p class="text-xs text-slate-500 mt-1">Paste HTML content here</p>
+                    </div>
+                    <div
+                        id="input"
+                        contenteditable="true"
+                        class="editor-pane flex-1 p-4 overflow-auto focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset text-sm leading-relaxed text-slate-300 whitespace-pre-wrap break-words"
+                        placeholder="Paste HTML here..."
+                        spellcheck="false"
+                    ></div>
+                    <div class="bg-slate-700 px-4 py-2 border-t border-slate-600 text-xs text-slate-500">
+                        <span id="input-char-count">0</span> characters
+                    </div>
+                </div>
+            </div>
+
+            <!-- Output Section -->
+            <div class="flex flex-col">
+                <div class="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden flex flex-col h-full">
+                    <div class="bg-slate-700 px-4 py-3 border-b border-slate-600">
+                        <h2 class="font-semibold text-sm text-slate-300">Output: Dumbdown</h2>
+                        <p class="text-xs text-slate-500 mt-1">Converted text</p>
+                    </div>
+                    <pre
+                        id="output"
+                        class="editor-pane flex-1 p-4 overflow-auto text-sm leading-relaxed text-slate-300 bg-slate-900 text-slate-400"
+                    ></pre>
+                    <div class="bg-slate-700 px-4 py-2 border-t border-slate-600 text-xs text-slate-500">
+                        <span id="output-char-count">0</span> characters
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Control Buttons -->
+        <div class="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+            <button
+                id="convert-button"
+                class="px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+                ✨ Convert
+            </button>
+            <button
+                id="copy-button"
+                class="px-8 py-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+                📋 Copy
+            </button>
+            <button
+                id="clear-button"
+                class="px-8 py-3 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-500 hover:to-slate-600 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 focus:ring-offset-slate-900"
+            >
+                🗑️ Clear
+            </button>
+        </div>
+
+        <!-- Status Messages -->
+        <div id="status" class="mt-6 text-center text-sm text-slate-400 min-h-6"></div>
+
+        <!-- Documentation -->
+        <div class="mt-12 bg-slate-800 rounded-lg border border-slate-700 p-6">
+            <h3 class="text-lg font-semibold mb-4 text-blue-400">Dumbdown Format Guide</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-slate-300">
+                <div>
+                    <h4 class="font-semibold text-slate-200 mb-2">Headings</h4>
+                    <code class="bg-slate-900 p-2 block mb-2 text-slate-400">
+                        Title<br/>
+                        =====<br/>
+                        <br/>
+                        Subtitle<br/>
+                        --------
+                    </code>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-slate-200 mb-2">Lists</h4>
+                    <code class="bg-slate-900 p-2 block mb-2 text-slate-400">
+                        - Item one<br/>
+                        - Item two<br/>
+                        -- Nested item
+                    </code>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-slate-200 mb-2">Emphasis</h4>
+                    <code class="bg-slate-900 p-2 block mb-2 text-slate-400">
+                        BOLD TEXT and ITALIC TEXT
+                    </code>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-slate-200 mb-2">Code</h4>
+                    <code class="bg-slate-900 p-2 block mb-2 text-slate-400">
+                        Inline: `code`<br/>
+                        <br/>
+                        Block:<br/>
+                        ```<br/>
+                        code here<br/>
+                        ```
+                    </code>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

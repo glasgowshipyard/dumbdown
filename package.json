@@ -1,0 +1,22 @@
+{
+  "name": "dumbdown",
+  "version": "2.0.0",
+  "description": "Convert HTML to clean, readable Dumbdown markup",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node src/server.js",
+    "test": "jest --coverage"
+  },
+  "keywords": ["markdown", "html", "parser", "formatter"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "compression": "^1.8.0",
+    "express": "^4.21.2",
+    "jsdom": "^26.0.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}
