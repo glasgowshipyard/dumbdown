@@ -1,0 +1,49 @@
+# Dumbdown Cloudflare Worker Configuration
+# https://developers.cloudflare.com/workers/wrangler/configuration/
+
+name = "dumbdown"
+main = "src/worker.js"
+compatibility_date = "2024-10-19"
+compatibility_flags = ["nodejs_compat"]
+
+# Build configuration
+[build]
+command = "npm ci && npm run build"
+
+# Assets/Static Files
+[env.production]
+name = "dumbdown-prod"
+# Uncomment and update with your domain:
+# route = "https://dumbdown.yourdomain.com/*"
+# zone_id = "your-zone-id"
+
+[env.staging]
+name = "dumbdown-staging"
+# Uncomment and update:
+# route = "https://staging.dumbdown.yourdomain.com/*"
+# zone_id = "your-zone-id"
+
+# Development server
+[env.development]
+# Local-only settings
+
+# Observability & Monitoring
+[observability]
+enabled = true
+
+# Performance & Rate Limiting (optional)
+# [limits]
+# cpu_ms = 50  # CPU time limit per request
+
+# Environment Variables (uncommment and set as needed)
+# [env.production.vars]
+# ENVIRONMENT = "production"
+# LOG_LEVEL = "error"
+
+# Secrets (use: wrangler secret put KEY_NAME)
+# [env.production.vars.secrets]
+# API_KEY = ""  # Set via: wrangler secret put API_KEY
+
+# Triggers (Cron jobs, optional)
+# [[triggers.crons]]
+# cron = "0 0 * * *"  # Midnight daily

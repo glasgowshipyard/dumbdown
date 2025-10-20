@@ -3,7 +3,7 @@
  * Converts HTML into an intermediate semantic structure that's easier to normalize and serialize
  */
 
-const { JSDOM } = require('jsdom');
+import { JSDOM } from 'jsdom';
 
 class SemanticNode {
   constructor(type, content = '', depth = 0, meta = {}) {
@@ -196,4 +196,4 @@ class HTMLParser {
   }
 }
 
-module.exports = { HTMLParser, SemanticNode };
+export { HTMLParser, SemanticNode };

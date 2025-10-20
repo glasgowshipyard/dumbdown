@@ -3,11 +3,11 @@
  * Pipeline: HTMLParser -> Normalizer -> Serializer
  */
 
-const { HTMLParser } = require('./parser');
-const { Normalizer } = require('./normalizer');
-const { Serializer } = require('./serializer');
+import { HTMLParser } from './parser.js';
+import { Normalizer } from './normalizer.js';
+import { Serializer } from './serializer.js';
 
-class Converter {
+export class Converter {
   /**
    * Convert HTML to Dumbdown format
    * @param {string} html - The HTML string to convert
@@ -43,4 +43,3 @@ class Converter {
   }
 }
 
-module.exports = { Converter };

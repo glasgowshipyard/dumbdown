@@ -3,7 +3,7 @@
  * Converts semantic tree to Dumbdown formatted text
  */
 
-class Serializer {
+export class Serializer {
   constructor() {
     this.output = [];
     this.lastNodeType = null;
@@ -279,4 +279,3 @@ class Serializer {
   }
 }
 
-module.exports = { Serializer };

@@ -4,7 +4,7 @@
  * This happens BEFORE serialization to ensure proper spacing
  */
 
-class Normalizer {
+export class Normalizer {
   /**
    * Normalize the semantic tree
    */
@@ -98,4 +98,3 @@ class Normalizer {
   }
 }
 
-module.exports = { Normalizer };

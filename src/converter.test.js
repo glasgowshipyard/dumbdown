@@ -2,7 +2,7 @@
  * Test Suite for HTML to Dumbdown Conversion
  */
 
-const { Converter } = require('./converter');
+import { Converter } from './converter.js';
 
 describe('Converter - HTML to Dumbdown', () => {
   describe('Headings', () => {
