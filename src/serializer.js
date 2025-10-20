@@ -83,21 +83,13 @@ export class Serializer {
   }
 
   /**
-   * Serialize heading
+   * Serialize heading - all levels use // prefix system per v2 cheatsheet
+   * H1 = //, H2 = ///, H3 = ////, etc.
    */
   serializeHeading(node) {
     const { level } = node.meta;
-    if (level === 1) {
-      this.output.push(node.content);
-      this.output.push('='.repeat(node.content.length));
-    } else if (level === 2) {
-      this.output.push(node.content);
-      this.output.push('-'.repeat(node.content.length));
-    } else {
-      // H3-H6 use prefix syntax
-      const prefix = '/'.repeat(level - 1);
-      this.output.push(`${prefix} ${node.content}`);
-    }
+    const prefix = '/'.repeat(level + 1);
+    this.output.push(`${prefix} ${node.content}`);
   }
 
   /**

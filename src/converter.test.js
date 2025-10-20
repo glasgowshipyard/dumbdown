@@ -6,24 +6,30 @@ import { Converter } from './converter.js';
 
 describe('Converter - HTML to Dumbdown', () => {
   describe('Headings', () => {
-    test('converts H1 to underlined format', () => {
+    test('converts H1 to // prefix format', () => {
       const html = '<h1>Main Title</h1>';
       const result = Converter.convert(html);
-      expect(result).toContain('Main Title');
-      expect(result).toContain('='.repeat('Main Title'.length));
+      expect(result).toContain('// Main Title');
     });
 
-    test('converts H2 to dashed format', () => {
+    test('converts H2 to /// prefix format', () => {
       const html = '<h2>Subtitle</h2>';
       const result = Converter.convert(html);
-      expect(result).toContain('Subtitle');
-      expect(result).toContain('-'.repeat('Subtitle'.length));
+      expect(result).toContain('/// Subtitle');
     });
 
-    test('converts H3 to slash prefix format', () => {
+    test('converts H3 to //// prefix format', () => {
       const html = '<h3>Small Heading</h3>';
       const result = Converter.convert(html);
-      expect(result).toContain('// Small Heading');
+      expect(result).toContain('//// Small Heading');
+    });
+
+    test('converts H4-H6 correctly', () => {
+      const html = '<h4>Level 4</h4><h5>Level 5</h5><h6>Level 6</h6>';
+      const result = Converter.convert(html);
+      expect(result).toContain('///// Level 4');
+      expect(result).toContain('////// Level 5');
+      expect(result).toContain('/////// Level 6');
     });
   });
 
@@ -139,8 +145,7 @@ describe('Converter - HTML to Dumbdown', () => {
       `;
       const result = Converter.convert(html);
 
-      expect(result).toContain('My Article');
-      expect(result).toContain('=');
+      expect(result).toContain('// My Article');
       expect(result).toContain('BOLD TEXT');
       expect(result).toContain('- Point one');
       expect(result).toContain('`code`');
@@ -163,7 +168,7 @@ describe('Converter - HTML to Dumbdown', () => {
       `;
       const result = Converter.convert(html);
 
-      expect(result).toContain('Section Title');
+      expect(result).toContain('/// Section Title');
       expect(result).not.toContain('   '); // No triple spaces
       expect(result).toContain('Paragraph with extra whitespace.');
     });
