@@ -12,6 +12,9 @@ const statusElement = document.getElementById('status');
 const inputCharCount = document.getElementById('input-char-count');
 const outputCharCount = document.getElementById('output-char-count');
 
+// Store raw HTML from paste events (not the rendered DOM)
+let rawPastedHTML = '';
+
 // Update character counts
 function updateCounts() {
   inputCharCount.textContent = inputElement.textContent.length;
@@ -20,7 +23,8 @@ function updateCounts() {
 
 // Convert HTML to Dumbdown
 async function convert() {
-  const html = inputElement.innerHTML;
+  // Use stored raw HTML if available, otherwise use current content
+  const html = rawPastedHTML || inputElement.innerHTML;
 
   if (!html.trim()) {
     showStatus('Please paste some HTML to convert', 'error');
@@ -81,6 +85,7 @@ function clearAll() {
   inputElement.textContent = '';
   outputElement.textContent = '';
   statusElement.textContent = '';
+  rawPastedHTML = '';
   updateCounts();
   inputElement.focus();
 }
@@ -131,31 +136,16 @@ inputElement.addEventListener('keydown', (e) => {
 inputElement.addEventListener('paste', (e) => {
   e.preventDefault();
 
-  // Get paste data
+  // Get paste data - prefer HTML, fallback to plain text
   const html = (e.clipboardData || window.clipboardData).getData('text/html') ||
                (e.clipboardData || window.clipboardData).getData('text/plain');
 
   if (html) {
-    // Insert the pasted content
-    const selection = window.getSelection();
-    if (selection.rangeCount > 0) {
-      const range = selection.getRangeAt(0);
-      range.deleteContents();
+    // Store the raw HTML for conversion
+    rawPastedHTML = html;
 
-      // For text/html, we need to insert as actual HTML
-      const temp = document.createElement('div');
-      temp.innerHTML = html;
-      const fragment = document.createDocumentFragment();
-
-      while (temp.firstChild) {
-        fragment.appendChild(temp.firstChild);
-      }
-
-      range.insertNode(fragment);
-      range.collapse(false);
-      selection.removeAllRanges();
-      selection.addRange(range);
-    }
+    // Display as plain text (not rendered) so user can see the HTML
+    inputElement.textContent = html;
 
     setTimeout(updateCounts, 0);
     showStatus('📝 Pasted HTML - click Convert to process', 'info');
