@@ -6,9 +6,21 @@
     <title>Dumbdown - HTML to Markdown Converter</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .editor-pane {
-            font-family: 'Courier New', monospace;
+        @font-face {
+            font-family: 'Native';
+            src: url('/fonts/Native-Regular.otf') format('opentype');
+            font-weight: normal;
+            font-style: normal;
         }
+
+        body {
+            font-family: 'Native', 'Courier New', monospace;
+        }
+
+        .editor-pane {
+            font-family: 'Native', 'Courier New', monospace;
+        }
+
         .loading {
             opacity: 0.6;
             pointer-events: none;
