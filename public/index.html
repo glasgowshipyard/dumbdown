@@ -3,144 +3,337 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dumbdown - HTML to Markdown Converter</title>
+    <title>Dumbdown - Human-Readable Formatting</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700|jetbrains-mono:400,500" rel="stylesheet" />
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        amber: {
+                            50: '#fffbeb',
+                            100: '#fef3c7',
+                            200: '#fde68a',
+                            300: '#fcd34d',
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                            700: '#b45309',
+                            800: '#92400e',
+                            900: '#78350f',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        @font-face {
-            font-family: 'Native';
-            src: url('/fonts/Native-Regular.otf') format('opentype');
-            font-weight: normal;
-            font-style: normal;
+        @media (prefers-color-scheme: light) {
+            :root {
+                --bg-primary: #ffffff;
+                --bg-secondary: #f9fafb;
+                --bg-tertiary: #f3f4f6;
+                --border-color: #e5e7eb;
+                --text-primary: #111827;
+                --text-secondary: #6b7280;
+                --text-tertiary: #9ca3af;
+                --accent-from: #f59e0b;
+                --accent-to: #d97706;
+            }
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-primary: #0f172a;
+                --bg-secondary: #1e293b;
+                --bg-tertiary: #334155;
+                --border-color: #475569;
+                --text-primary: #f1f5f9;
+                --text-secondary: #cbd5e1;
+                --text-tertiary: #94a3b8;
+                --accent-from: #fbbf24;
+                --accent-to: #f59e0b;
+            }
         }
 
         body {
-            font-family: 'Native', 'Courier New', monospace;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+
+        .accent-gradient {
+            background: linear-gradient(135deg, var(--accent-from), var(--accent-to));
+        }
+
+        .text-gradient {
+            background: linear-gradient(135deg, var(--accent-from), var(--accent-to));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+        }
+
+        .code-block {
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            font-family: 'JetBrains Mono', monospace;
         }
 
         .editor-pane {
-            font-family: 'Native', 'Courier New', monospace;
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
         }
 
-        .loading {
-            opacity: 0.6;
-            pointer-events: none;
+        .editor-pane:focus {
+            outline: 2px solid var(--accent-from);
+            outline-offset: -2px;
+        }
+
+        .smooth-transition {
+            transition: all 0.2s ease-in-out;
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-slate-900 to-slate-800 min-h-screen text-slate-100">
-    <div class="container mx-auto px-4 py-8 max-w-6xl">
-        <!-- Header -->
-        <div class="text-center mb-12">
-            <h1 class="text-4xl font-bold mb-2 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                Dumbdown
+<body class="min-h-screen">
+    <!-- Hero Section -->
+    <div class="container mx-auto px-4 py-16 max-w-5xl">
+        <div class="text-center mb-16">
+            <h1 class="text-5xl md:text-7xl font-bold mb-6 text-gradient">
+                dumbdown
             </h1>
-            <p class="text-slate-400">Convert messy HTML into clean, readable Dumbdown format</p>
+            <p class="text-xl md:text-2xl mb-8" style="color: var(--text-secondary);">
+                Write it once. Read it anywhere.
+            </p>
+            <p class="text-lg max-w-2xl mx-auto leading-relaxed" style="color: var(--text-tertiary);">
+                Dumbdown is a formatting system designed for humans, not machines. No special rendering required.
+                Write it in a code block, plain text file, or anywhere—it's immediately readable.
+            </p>
         </div>
 
-        <!-- Main Container -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Input Section -->
-            <div class="flex flex-col">
-                <div class="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden flex flex-col h-full">
-                    <div class="bg-slate-700 px-4 py-3 border-b border-slate-600">
-                        <h2 class="font-semibold text-sm text-slate-300">Input: HTML</h2>
-                        <p class="text-xs text-slate-500 mt-1">Paste HTML content here</p>
+        <!-- Philosophy Section -->
+        <section class="mb-20">
+            <h2 class="text-3xl font-bold mb-8 text-center">Why Dumbdown?</h2>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="card rounded-xl p-6 smooth-transition hover:scale-105">
+                    <div class="text-4xl mb-4">📖</div>
+                    <h3 class="text-xl font-semibold mb-3">Human-Readable First</h3>
+                    <p style="color: var(--text-secondary);">
+                        Markdown needs rendering. HTML needs a browser. Dumbdown? Just read it.
+                        No parser, no preview—what you see is what you get.
+                    </p>
+                </div>
+                <div class="card rounded-xl p-6 smooth-transition hover:scale-105">
+                    <div class="text-4xl mb-4">✍️</div>
+                    <h3 class="text-xl font-semibold mb-3">Write Anywhere</h3>
+                    <p style="color: var(--text-secondary);">
+                        Code blocks, text files, comments, documentation. If you can type text,
+                        you can write dumbdown—and everyone can read it.
+                    </p>
+                </div>
+                <div class="card rounded-xl p-6 smooth-transition hover:scale-105">
+                    <div class="text-4xl mb-4">🎯</div>
+                    <h3 class="text-xl font-semibold mb-3">Simple Rules</h3>
+                    <p style="color: var(--text-secondary);">
+                        Learn the syntax once. Use it forever. No edge cases, no conflicting flavors,
+                        no memorizing when to escape characters.
+                    </p>
+                </div>
+                <div class="card rounded-xl p-6 smooth-transition hover:scale-105">
+                    <div class="text-4xl mb-4">🚫</div>
+                    <h3 class="text-xl font-semibold mb-3">Zero Dependencies</h3>
+                    <p style="color: var(--text-secondary);">
+                        No libraries. No build steps. No converters needed to read it.
+                        Just open the file and understand it instantly.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Format Guide -->
+        <section class="mb-20">
+            <h2 class="text-3xl font-bold mb-8 text-center">The Format</h2>
+            <p class="text-center mb-12 text-lg" style="color: var(--text-secondary);">
+                Five simple rules. That's it.
+            </p>
+
+            <div class="space-y-6">
+                <!-- Headings -->
+                <div class="card rounded-xl p-6">
+                    <h3 class="text-xl font-semibold mb-4 text-gradient">Headings</h3>
+                    <p class="mb-4" style="color: var(--text-secondary);">
+                        Slashes before text. More slashes = smaller heading.
+                    </p>
+                    <div class="code-block rounded-lg p-4 text-sm">
+                        <div class="mb-2">// This is a main title</div>
+                        <div class="mb-2">/// This is a subtitle</div>
+                        <div>//// This is a smaller heading</div>
                     </div>
-                    <div
-                        id="input"
-                        contenteditable="true"
-                        class="editor-pane flex-1 p-4 overflow-auto focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset text-sm leading-relaxed text-slate-300 whitespace-pre-wrap break-words"
-                        placeholder="Paste HTML here..."
-                        spellcheck="false"
-                    ></div>
-                    <div class="bg-slate-700 px-4 py-2 border-t border-slate-600 text-xs text-slate-500">
-                        <span id="input-char-count">0</span> characters
+                </div>
+
+                <!-- Lists -->
+                <div class="card rounded-xl p-6">
+                    <h3 class="text-xl font-semibold mb-4 text-gradient">Lists</h3>
+                    <p class="mb-4" style="color: var(--text-secondary);">
+                        Dashes for bullets, numbers for ordered. Double dash for nesting.
+                    </p>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-sm mb-2 font-medium" style="color: var(--text-tertiary);">Unordered:</p>
+                            <div class="code-block rounded-lg p-4 text-sm">
+                                <div>- First item</div>
+                                <div>- Second item</div>
+                                <div>-- Nested item</div>
+                                <div>-- Another nested</div>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-sm mb-2 font-medium" style="color: var(--text-tertiary);">Ordered:</p>
+                            <div class="code-block rounded-lg p-4 text-sm">
+                                <div>1. First step</div>
+                                <div>2. Second step</div>
+                                <div>-- Sub-step</div>
+                                <div>3. Third step</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Emphasis -->
+                <div class="card rounded-xl p-6">
+                    <h3 class="text-xl font-semibold mb-4 text-gradient">Emphasis</h3>
+                    <p class="mb-4" style="color: var(--text-secondary);">
+                        Just use ALL CAPS. No asterisks, no underscores.
+                    </p>
+                    <div class="code-block rounded-lg p-4 text-sm">
+                        <div>This is IMPORTANT and this is ALSO IMPORTANT.</div>
+                    </div>
+                </div>
+
+                <!-- Code -->
+                <div class="card rounded-xl p-6">
+                    <h3 class="text-xl font-semibold mb-4 text-gradient">Code</h3>
+                    <p class="mb-4" style="color: var(--text-secondary);">
+                        Backticks for inline, triple backticks for blocks.
+                    </p>
+                    <div class="code-block rounded-lg p-4 text-sm">
+                        <div class="mb-3">Run the `npm install` command first.</div>
+                        <div class="mb-1">```</div>
+                        <div class="ml-4 mb-1">function hello() {</div>
+                        <div class="ml-8 mb-1">console.log('world');</div>
+                        <div class="ml-4 mb-1">}</div>
+                        <div>```</div>
+                    </div>
+                </div>
+
+                <!-- Labels & Callouts -->
+                <div class="card rounded-xl p-6">
+                    <h3 class="text-xl font-semibold mb-4 text-gradient">Labels & Callouts</h3>
+                    <p class="mb-4" style="color: var(--text-secondary);">
+                        Add context with [LABELS] or draw attention with !! and >>.
+                    </p>
+                    <div class="code-block rounded-lg p-4 text-sm space-y-2">
+                        <div>[NOTE] This only works on Linux systems</div>
+                        <div>[WARNING] Database backup required before running</div>
+                        <div class="pt-2">!! ACTION REQUIRED before deployment</div>
+                        <div>>> This insight could save hours of debugging</div>
+                    </div>
+                </div>
+
+                <!-- Quotes -->
+                <div class="card rounded-xl p-6">
+                    <h3 class="text-xl font-semibold mb-4 text-gradient">Quotes</h3>
+                    <p class="mb-4" style="color: var(--text-secondary);">
+                        Natural quote marks. Works across multiple lines.
+                    </p>
+                    <div class="code-block rounded-lg p-4 text-sm">
+                        <div>"This is a quoted section that</div>
+                        <div>spans multiple lines naturally</div>
+                        <div>without any special syntax."</div>
                     </div>
                 </div>
             </div>
+        </section>
 
-            <!-- Output Section -->
-            <div class="flex flex-col">
-                <div class="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden flex flex-col h-full">
-                    <div class="bg-slate-700 px-4 py-3 border-b border-slate-600">
-                        <h2 class="font-semibold text-sm text-slate-300">Output: Dumbdown</h2>
-                        <p class="text-xs text-slate-500 mt-1">Converted text</p>
-                    </div>
-                    <pre
-                        id="output"
-                        class="editor-pane flex-1 p-4 overflow-auto text-sm leading-relaxed text-slate-300 bg-slate-900 text-slate-400"
-                    ></pre>
-                    <div class="bg-slate-700 px-4 py-2 border-t border-slate-600 text-xs text-slate-500">
+        <!-- Converter Section -->
+        <section class="mb-20">
+            <h2 class="text-3xl font-bold mb-8 text-center">Convert Markdown to Dumbdown</h2>
+            <p class="text-center mb-8 text-lg" style="color: var(--text-secondary);">
+                Paste your markdown below and see it transformed into clean, readable dumbdown.
+            </p>
+
+            <div class="card rounded-xl p-6 mb-6">
+                <label class="block text-sm font-medium mb-2" style="color: var(--text-secondary);">
+                    Markdown Input
+                </label>
+                <textarea
+                    id="markdown-input"
+                    class="editor-pane w-full rounded-lg p-4 text-sm leading-relaxed resize-none"
+                    rows="10"
+                    placeholder="# Your Markdown Here
+
+Paste your markdown and watch it transform..."
+                    spellcheck="false"
+                ></textarea>
+                <div class="mt-2 text-xs" style="color: var(--text-tertiary);">
+                    <span id="input-char-count">0</span> characters
+                </div>
+            </div>
+
+            <div class="flex justify-center mb-6">
+                <button
+                    id="convert-button"
+                    class="accent-gradient text-white font-semibold px-8 py-3 rounded-lg smooth-transition hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2"
+                    style="box-shadow: 0 4px 14px 0 rgba(251, 191, 36, 0.39);"
+                >
+                    Convert to Dumbdown
+                </button>
+            </div>
+
+            <div class="card rounded-xl p-6">
+                <label class="block text-sm font-medium mb-2" style="color: var(--text-secondary);">
+                    Dumbdown Output
+                </label>
+                <pre
+                    id="dumbdown-output"
+                    class="editor-pane w-full rounded-lg p-4 text-sm leading-relaxed overflow-auto"
+                    style="min-height: 240px;"
+                ></pre>
+                <div class="mt-2 flex justify-between items-center">
+                    <div class="text-xs" style="color: var(--text-tertiary);">
                         <span id="output-char-count">0</span> characters
                     </div>
+                    <button
+                        id="copy-button"
+                        class="text-sm font-medium px-4 py-2 rounded-lg smooth-transition hover:scale-105"
+                        style="color: var(--accent-from); border: 1px solid var(--accent-from);"
+                    >
+                        Copy
+                    </button>
                 </div>
             </div>
-        </div>
 
-        <!-- Control Buttons -->
-        <div class="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-            <button
-                id="convert-button"
-                class="px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-                ✨ Convert
-            </button>
-            <button
-                id="copy-button"
-                class="px-8 py-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-                📋 Copy
-            </button>
-            <button
-                id="clear-button"
-                class="px-8 py-3 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-500 hover:to-slate-600 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 focus:ring-offset-slate-900"
-            >
-                🗑️ Clear
-            </button>
-        </div>
+            <div id="status" class="mt-4 text-center text-sm min-h-6"></div>
+        </section>
 
-        <!-- Status Messages -->
-        <div id="status" class="mt-6 text-center text-sm text-slate-400 min-h-6"></div>
-
-        <!-- Documentation -->
-        <div class="mt-12 bg-slate-800 rounded-lg border border-slate-700 p-6">
-            <h3 class="text-lg font-semibold mb-4 text-blue-400">Dumbdown Format Guide</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-slate-300">
-                <div>
-                    <h4 class="font-semibold text-slate-200 mb-2">Headings</h4>
-                    <code class="bg-slate-900 p-2 block mb-2 text-slate-400">
-                        // Main Title<br/>
-                        /// Subtitle<br/>
-                        //// Smaller Heading
-                    </code>
-                </div>
-                <div>
-                    <h4 class="font-semibold text-slate-200 mb-2">Lists</h4>
-                    <code class="bg-slate-900 p-2 block mb-2 text-slate-400">
-                        - Item one<br/>
-                        - Item two<br/>
-                        -- Nested item
-                    </code>
-                </div>
-                <div>
-                    <h4 class="font-semibold text-slate-200 mb-2">Emphasis</h4>
-                    <code class="bg-slate-900 p-2 block mb-2 text-slate-400">
-                        BOLD TEXT and ITALIC TEXT
-                    </code>
-                </div>
-                <div>
-                    <h4 class="font-semibold text-slate-200 mb-2">Code</h4>
-                    <code class="bg-slate-900 p-2 block mb-2 text-slate-400">
-                        Inline: `code`<br/>
-                        <br/>
-                        Block:<br/>
-                        ```<br/>
-                        code here<br/>
-                        ```
-                    </code>
-                </div>
-            </div>
-        </div>
+        <!-- Footer -->
+        <footer class="text-center py-8 border-t" style="border-color: var(--border-color); color: var(--text-tertiary);">
+            <p class="text-sm">
+                Dumbdown v2 — Human-readable formatting for everyone
+            </p>
+        </footer>
     </div>
 
     <script src="script.js"></script>

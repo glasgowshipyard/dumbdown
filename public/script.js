@@ -1,33 +1,28 @@
 /**
  * Dumbdown Frontend Script
- * Handles HTML to Dumbdown conversion UI
+ * Handles Markdown to Dumbdown conversion UI
  */
 
-const inputElement = document.getElementById('input');
-const outputElement = document.getElementById('output');
+const markdownInput = document.getElementById('markdown-input');
+const dumbdownOutput = document.getElementById('dumbdown-output');
 const convertButton = document.getElementById('convert-button');
 const copyButton = document.getElementById('copy-button');
-const clearButton = document.getElementById('clear-button');
 const statusElement = document.getElementById('status');
 const inputCharCount = document.getElementById('input-char-count');
 const outputCharCount = document.getElementById('output-char-count');
 
-// Store raw HTML from paste events (not the rendered DOM)
-let rawPastedHTML = '';
-
 // Update character counts
 function updateCounts() {
-  inputCharCount.textContent = inputElement.textContent.length;
-  outputCharCount.textContent = outputElement.textContent.length;
+  inputCharCount.textContent = markdownInput.value.length;
+  outputCharCount.textContent = dumbdownOutput.textContent.length;
 }
 
-// Convert HTML to Dumbdown
+// Convert Markdown to Dumbdown
 async function convert() {
-  // Use stored raw HTML if available, otherwise use current content
-  const html = rawPastedHTML || inputElement.innerHTML;
+  const markdown = markdownInput.value;
 
-  if (!html.trim()) {
-    showStatus('Please paste some HTML to convert', 'error');
+  if (!markdown.trim()) {
+    showStatus('Please enter some markdown to convert', 'error');
     return;
   }
 
@@ -35,12 +30,12 @@ async function convert() {
   showStatus('Converting...', 'loading');
 
   try {
-    const response = await fetch('/convert', {
+    const response = await fetch('/convert-markdown', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ text: html })
+      body: JSON.stringify({ markdown })
     });
 
     if (!response.ok) {
@@ -49,12 +44,12 @@ async function convert() {
     }
 
     const data = await response.json();
-    outputElement.textContent = data.dumbdown;
+    dumbdownOutput.textContent = data.dumbdown;
     updateCounts();
-    showStatus('✅ Conversion successful!', 'success');
+    showStatus('Conversion successful', 'success');
   } catch (error) {
     console.error('Error:', error);
-    showStatus(`❌ Error: ${error.message}`, 'error');
+    showStatus(`Error: ${error.message}`, 'error');
   } finally {
     convertButton.disabled = false;
   }
@@ -62,102 +57,62 @@ async function convert() {
 
 // Copy output to clipboard
 async function copyToClipboard() {
-  if (!outputElement.textContent) {
-    showStatus('Nothing to copy - convert some HTML first', 'warning');
+  if (!dumbdownOutput.textContent) {
+    showStatus('Nothing to copy - convert some markdown first', 'warning');
     return;
   }
 
   try {
-    await navigator.clipboard.writeText(outputElement.textContent);
-    showStatus('✅ Copied to clipboard!', 'success');
-    copyButton.textContent = '✓ Copied';
+    await navigator.clipboard.writeText(dumbdownOutput.textContent);
+    showStatus('Copied to clipboard', 'success');
+    const originalText = copyButton.textContent;
+    copyButton.textContent = 'Copied!';
     setTimeout(() => {
-      copyButton.textContent = '📋 Copy';
+      copyButton.textContent = originalText;
     }, 2000);
   } catch (error) {
     console.error('Copy error:', error);
-    showStatus('❌ Failed to copy to clipboard', 'error');
+    showStatus('Failed to copy to clipboard', 'error');
   }
-}
-
-// Clear all content
-function clearAll() {
-  inputElement.textContent = '';
-  outputElement.textContent = '';
-  statusElement.textContent = '';
-  rawPastedHTML = '';
-  updateCounts();
-  inputElement.focus();
 }
 
 // Show status message
 function showStatus(message, type = 'info') {
   statusElement.textContent = message;
-  statusElement.className = `mt-6 text-center text-sm min-h-6 ${getStatusClass(type)}`;
+  statusElement.style.color = getStatusColor(type);
 
-  if (type !== 'loading' && type !== 'info') {
+  if (type !== 'loading') {
     setTimeout(() => {
       statusElement.textContent = '';
     }, 4000);
   }
 }
 
-function getStatusClass(type) {
-  switch (type) {
-    case 'error':
-      return 'text-red-400';
-    case 'success':
-      return 'text-green-400';
-    case 'warning':
-      return 'text-yellow-400';
-    case 'loading':
-      return 'text-blue-400 animate-pulse';
-    default:
-      return 'text-slate-400';
-  }
+function getStatusColor(type) {
+  const colors = {
+    error: '#ef4444',
+    success: '#10b981',
+    warning: '#f59e0b',
+    loading: '#fbbf24',
+    info: '#94a3b8'
+  };
+  return colors[type] || colors.info;
 }
 
 // Event listeners
 convertButton.addEventListener('click', convert);
 copyButton.addEventListener('click', copyToClipboard);
-clearButton.addEventListener('click', clearAll);
 
-// Convert on Enter (Ctrl/Cmd + Enter)
-inputElement.addEventListener('keydown', (e) => {
+// Convert on Ctrl/Cmd + Enter
+markdownInput.addEventListener('keydown', (e) => {
   if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
     e.preventDefault();
     convert();
   }
-  // Update counts as user types
-  setTimeout(updateCounts, 0);
 });
 
-// Handle paste events
-inputElement.addEventListener('paste', (e) => {
-  e.preventDefault();
+// Update character count as user types
+markdownInput.addEventListener('input', updateCounts);
 
-  // Get paste data - prefer HTML, fallback to plain text
-  const html = (e.clipboardData || window.clipboardData).getData('text/html') ||
-               (e.clipboardData || window.clipboardData).getData('text/plain');
-
-  if (html) {
-    // Store the raw HTML for conversion
-    rawPastedHTML = html;
-
-    // Display as plain text (not rendered) so user can see the HTML
-    inputElement.textContent = html;
-
-    setTimeout(updateCounts, 0);
-    showStatus('📝 Pasted HTML - click Convert to process', 'info');
-  }
-});
-
-// Handle input events for character count
-inputElement.addEventListener('input', updateCounts);
-inputElement.addEventListener('change', updateCounts);
-
-// Focus on load
-window.addEventListener('load', () => {
-  inputElement.focus();
-  updateCounts();
-});
+// Initialize character counts
+window.addEventListener('load', updateCounts);

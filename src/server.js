@@ -8,6 +8,7 @@ import path from 'path';
 import compression from 'compression';
 import { fileURLToPath } from 'url';
 import { Converter } from './converter.js';
+import { MarkdownConverter } from './markdown-converter.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -25,7 +26,7 @@ app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
 });
 
-// Conversion API endpoint
+// Conversion API endpoint (HTML to Dumbdown)
 app.post('/convert', (req, res) => {
   try {
     const { text } = req.body;
@@ -44,6 +45,32 @@ app.post('/convert', (req, res) => {
     });
   } catch (error) {
     console.error('Conversion error:', error);
+    res.status(500).json({
+      error: 'Conversion failed',
+      message: error.message
+    });
+  }
+});
+
+// Markdown to Dumbdown conversion endpoint
+app.post('/convert-markdown', (req, res) => {
+  try {
+    const { markdown } = req.body;
+
+    if (!markdown || typeof markdown !== 'string') {
+      return res.status(400).json({
+        error: 'Invalid request',
+        message: 'Please provide markdown text in the request body as { markdown: "..." }'
+      });
+    }
+
+    const result = MarkdownConverter.convert(markdown);
+    res.json({
+      success: true,
+      dumbdown: result
+    });
+  } catch (error) {
+    console.error('Markdown conversion error:', error);
     res.status(500).json({
       error: 'Conversion failed',
       message: error.message
