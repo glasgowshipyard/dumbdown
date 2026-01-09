@@ -1,320 +1,184 @@
-# Dumbdown v2
++++
 
-A clean, modern HTML to Dumbdown converter. Built from scratch with a three-layer architecture: Parser → Normalizer → Serializer.
+// Dumbdown v2
 
-## Overview
+Convert Markdown to clean, human-readable dumbdown format.
 
-Dumbdown is a simpler alternative to Markdown that strips away formatting cruft while maintaining structural clarity. This project provides:
+/// What is Dumbdown?
 
-- **Web UI** - Paste HTML, click convert, copy the result
-- **REST API** - `/convert` endpoint for programmatic use
-- **Test Suite** - 22 comprehensive tests ensuring quality
-- **Clean Architecture** - Semantic parsing with proper whitespace normalization
+Dumbdown is a text formatting system designed for humans, not machines. Unlike Markdown or HTML, dumbdown is immediately readable without any rendering - what you see in plain text is what you get.
 
-## Quick Start
+Key principles:
+- Human-readable first
+- No rendering required
+- Simple, consistent rules
+- Two heading levels (// and ///)
+- Plain text emphasis (ALL CAPS)
 
-### Prerequisites
-- Node.js 14+
-- npm
+/// Features
 
-### Installation & Setup
+- Markdown to Dumbdown converter (primary)
+- HTML to Dumbdown converter (secondary)
+- Clean three-layer architecture
+- Preserves LaTeX math expressions
+- REST API for integration
+- Comprehensive test suite
 
-```bash
-# Install dependencies
+/// Quick Start
+
+Install dependencies:
+```
 npm install
+```
 
-# Start the server
+Start the server:
+```
 npm start
-# Server runs on http://localhost:3000
 ```
 
-### Using the Web UI
+Visit http://localhost:3000
 
-1. Open http://localhost:3000 in your browser
-2. Paste HTML content into the left pane
-3. Click "Convert" or press `Ctrl+Enter`
-4. Output appears in the right pane
-5. Click "Copy" to copy to clipboard
+/// API Usage
 
-### Using the API
-
-```bash
-curl -X POST http://localhost:3000/convert \
-  -H "Content-Type: application/json" \
-  -d '{"text": "<h1>Title</h1><p>Hello <b>world</b></p>"}'
+Convert Markdown to Dumbdown:
 ```
+POST /convert-markdown
+Content-Type: application/json
 
-Response:
-```json
 {
-  "success": true,
-  "dumbdown": "Title\n=====\n\nHello WORLD"
+  "markdown": "# Hello World\n\nThis is **bold** text."
 }
 ```
 
-## Architecture
-
-### Three-Layer Pipeline
-
-The conversion process follows a clean separation of concerns:
-
+Response:
 ```
-HTML Input
-    ↓
-[Parser] → Semantic Tree
-    ↓
-[Normalizer] → Clean Tree
-    ↓
-[Serializer] → Dumbdown Text
-    ↓
-Output
+{
+  "success": true,
+  "dumbdown": "+++\n\n// Hello World\n\nThis is BOLD text.\n\n+++"
+}
 ```
 
-#### 1. **Parser** (`src/parser.js`)
-Converts messy HTML into a clean semantic tree structure.
+HTML conversion is also supported via POST /convert endpoint.
 
-**Features:**
-- Removes unnecessary elements (script, style, meta, etc.)
-- Handles nested lists with proper depth tracking
-- Distinguishes between block and inline elements
-- Preserves semantic meaning (emphasis, code, links, quotes)
+/// Architecture
 
-**Semantic Node Types:**
-- Block: heading, paragraph, list, list_item, code_block, blockquote, callout
-- Inline: text, emphasis, inline_code, link
-- Container: root
+Dumbdown uses a three-layer pipeline:
 
-#### 2. **Normalizer** (`src/normalizer.js`)
-Cleans up the semantic tree by fixing whitespace issues BEFORE serialization.
+1. Parser - Converts input (HTML or Markdown) to semantic tree
+2. Normalizer - Cleans and optimizes the tree structure
+3. Serializer - Outputs clean dumbdown text
 
-**Key Responsibilities:**
-- Removes excessive whitespace in text nodes
-- Collapses consecutive text nodes
-- Removes empty nodes that don't contribute meaning
-- Preserves leaf nodes (headings, code) even if they have no children
+For Markdown conversion:
+- Headings: # -> //, ## and beyond -> ///
+- Bold/Italic: **text** or *text* -> TEXT
+- Lists: - item -> - item (with -- for nesting)
+- Code: Backticks preserved
+- Math: LaTeX expressions protected
 
-#### 3. **Serializer** (`src/serializer.js`)
-Converts the normalized semantic tree into Dumbdown formatted text.
+/// Dumbdown Format
 
-**Output Format:**
-- Headings: underline with `=` (H1) or `-` (H2)
-- Emphasis: ALL CAPS
-- Code: backticks
-- Lists: `-` (bullets), `1.` (ordered), `--` (nested)
-- Blockquotes: natural `"quoted"` format
-- Callouts: `[WARNING]`, `[NOTE]`, etc.
-
-## Dumbdown Format Reference
-
-```dumbdown
-Title
-=====
-
-Subtitle
---------
-
-/// Smaller Heading
-
-This is a paragraph with BOLD and ITALIC text.
-
-Use `inline_code()` for code.
-
-- Bullet point
-- Another bullet
-  -- Nested bullet
-  -- Another nested
-
-1. First item
-2. Second item
-3. Third item
-
-"This is a blockquote"
-
+Document markers:
 ```
-Code block with multiple lines
-More code here
++++
+// Your content here
++++
 ```
 
-[WARNING] This is important
-[NOTE] This is informational
->> Key insight
+Headings:
+```
+// Main Title
+/// Subtitle
+```
+
+Lists:
+```
+- First item
+- Second item
+-- Nested item
+```
+
+Emphasis:
+```
+This is IMPORTANT text.
+```
+
+Code:
+```
+Inline: `code here`
+
+Block:
+```
+code block
+```
+```
+
+Labels:
+```
+[NOTE] Additional context
+[WARNING] Important warning
+```
+
+Callouts:
+```
 !! Action required
+>> Key insight
 ```
 
-## Testing
-
-The project includes a comprehensive test suite:
-
-```bash
-npm test                  # Run all tests
-npm test -- --coverage   # With coverage report
+Quotes:
+```
+"This is a quoted section."
 ```
 
-**Test Coverage:**
-- ✓ Headings (H1-H6)
-- ✓ Paragraphs and text normalization
-- ✓ Emphasis (bold, italic)
-- ✓ Inline and block code
-- ✓ Unordered lists with nesting
-- ✓ Ordered lists
-- ✓ Blockquotes
-- ✓ Links
-- ✓ Complex mixed content
-- ✓ Real-world HTML with whitespace issues
-- ✓ Error handling
-- ✓ Whitespace edge cases
+/// Testing
 
-All 22 tests passing ✓
+Run tests:
+```
+npm test
+```
 
-## Project Structure
+The test suite covers 22 scenarios including edge cases, nested structures, and whitespace handling.
+
+/// Deployment
+
+The project is configured for Cloudflare Pages:
+- Static files served from /public
+- API endpoints in /functions directory
+- Auto-deploys on push to main branch
+
+Connect your GitHub repo to Cloudflare Pages and it will handle the rest.
+
+/// Project Structure
 
 ```
 dumbdown/
 ├── src/
-│   ├── parser.js          # HTML → Semantic Tree
-│   ├── normalizer.js      # Semantic Tree cleanup
-│   ├── serializer.js      # Semantic Tree → Dumbdown
-│   ├── converter.js       # Orchestrates pipeline
-│   ├── server.js          # Express server
-│   └── converter.test.js  # Test suite
+│   ├── parser.js              # HTML parsing
+│   ├── normalizer.js          # Tree cleanup
+│   ├── serializer.js          # Dumbdown output
+│   ├── converter.js           # HTML converter
+│   ├── markdown-converter.js  # Markdown converter (primary)
+│   ├── server.js              # Express server
+│   └── converter.test.js      # Test suite
+├── functions/
+│   ├── convert-markdown.js    # Cloudflare Pages Function
+│   ├── convert.js             # HTML conversion endpoint
+│   └── health.js              # Health check
 ├── public/
-│   ├── index.html         # Web UI
-│   └── script.js          # Frontend logic
-├── package.json
-├── README.md (this file)
-├── DUMBDOWN CHEATSHEET.txt    # Format spec
-├── dumbdown_strategy.md       # MVP strategy
-└── _old/                      # Previous implementation (archived)
+│   ├── index.html             # Web UI
+│   └── script.js              # Frontend logic
+└── package.json
 ```
 
-## Key Design Decisions
+/// Design Decisions
 
-### 1. **Semantic Parsing**
-Instead of doing string manipulation on raw HTML, we parse into a semantic tree. This allows proper handling of nested structures and makes the serialization logic clean and predictable.
+- Two heading levels only (// and ///) - deeper nesting is unnecessary
+- ALL CAPS for emphasis - no special markers needed
+- Document markers (+++) - clear start and end boundaries
+- LaTeX math preserved - technical documents fully supported
+- List nesting via repeated dashes - simple and visual
 
-### 2. **Whitespace Normalization Before Serialization**
-The old implementation had issues because it tried to fix whitespace AFTER all transformations. By normalizing the tree structure first, we avoid interference between transformation steps.
+/// Contributing
 
-### 3. **Three Distinct Modules**
-Each module has a single responsibility:
-- Parser: understand HTML
-- Normalizer: clean data
-- Serializer: format output
+This is a focused project with a clear scope. The format is stable and the implementation is complete.
 
-This makes debugging easier and testing more comprehensive.
-
-### 4. **Leaf Node Semantics**
-Some nodes (headings, code) don't have children but contain meaningful content. The normalizer preserves these, while removing truly empty container nodes.
-
-### 5. **Parent Type Tracking**
-Lists nested inside list items have different formatting than top-level lists. We track parent node type to handle this correctly.
-
-## API Endpoints
-
-### `POST /convert`
-Convert HTML to Dumbdown format.
-
-**Request:**
-```json
-{
-  "text": "<h1>Example</h1>..."
-}
-```
-
-**Response (Success):**
-```json
-{
-  "success": true,
-  "dumbdown": "Example\n=======\n..."
-}
-```
-
-**Response (Error):**
-```json
-{
-  "error": "Conversion failed",
-  "message": "Details about what went wrong"
-}
-```
-
-### `GET /health`
-Health check endpoint.
-
-**Response:**
-```json
-{
-  "status": "ok"
-}
-```
-
-## Deployment
-
-### Heroku
-
-The project includes a `Procfile` for easy Heroku deployment:
-
-```bash
-git push heroku main
-heroku open
-```
-
-### Environment Variables
-
-- `PORT` - Server port (default: 3000)
-
-### Other Platforms
-
-Works on any Node.js hosting (AWS Lambda, DigitalOcean, Vercel, etc.)
-
-## Performance Notes
-
-- Typical HTML conversion: < 100ms
-- No external API calls
-- Memory footprint: minimal (single-pass processing)
-- Scales well with reasonable HTML sizes (tested up to 1MB+)
-
-## Limitations & Future Work
-
-- **No CSS processing** - Styles are stripped, focus is on semantic content
-- **Link handling** - Currently extracts URLs only (could preserve link text)
-- **Images** - Not handled (could add image reference syntax)
-- **Tables** - Not yet supported
-- **Custom Dumbdown features** - Could add footnotes, citations, etc.
-
-## Development
-
-### Adding New Element Support
-
-1. Add parsing logic to `src/parser.js`
-2. Create semantic node type if needed
-3. Update `src/normalizer.js` if special handling needed
-4. Add serialization in `src/serializer.js`
-5. Add test cases to `src/converter.test.js`
-6. Run `npm test` to verify
-
-### Debugging
-
-Enable debug output:
-
-```javascript
-// In converter.js
-console.log('Parse tree:', JSON.stringify(semanticTree, null, 2));
-```
-
-## References
-
-- **Original Strategy**: See `dumbdown_strategy.md`
-- **Format Spec**: See `DUMBDOWN CHEATSHEET.txt`
-- **Previous Version**: See `_old/` directory (archived)
-
-## License
-
-ISC
-
-## Contributors
-
-Claude (Anthropic)
-
----
-
-Built with clean architecture principles and test-driven development.
++++
