@@ -84,32 +84,8 @@ sudo apt upgrade -y
 - Uses backticks ` like Markdown  
 - No need for special new syntax  
 
-SEPARATORS & BREAKS  
+SEPARATORS & BREAKS
 
-- No separate section break needed—titles and blank lines provide structure
+- No separate section break needed - titles and blank lines provide structure
 
-EMOJI SUPPORT (OPTIONAL, BUT USEFUL)  
-
-✅ Completed  
-❌ Blocked  
-⚠️ Needs review  
-💡 Idea  
-🔥 Important  
-
-- No disruption to structure—just clarity  
-
-FILE & EXPORT SUPPORT  
-
-Dumbdown can be saved, exported, or converted to:  
-- .txt → Universal plaintext  
-- .md → Markdown-compatible  
-- .json → Structured for automation  
-
-IMPORT & CONVERSION SUPPORT  
-
-Dumbdown can convert from:  
-- Word .docx → Strips all styling, keeps structure  
-- Rich Text / HTML → Cleans up formatting bloat  
-- PDF Text Extraction → Extracts content, applies Dumbdown  
-
-Dumbdown is the Markdown killer: simple, readable, and universally usable. 🚀  
+Dumbdown is simple, readable, and universally usable.  
