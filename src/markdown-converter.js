@@ -26,23 +26,15 @@ export class MarkdownConverter {
     });
 
     // Convert headings: # -> //, ## -> ///, ### -> ////
-    result = result.replace(/^######\s+(.+)$/gm, '////// $1');
-    result = result.replace(/^#####\s+(.+)$/gm, '///// $1');
-    result = result.replace(/^####\s+(.+)$/gm, '//// $1');
-    result = result.replace(/^###\s+(.+)$/gm, '/// $1');
-    result = result.replace(/^##\s+(.+)$/gm, '/// $1');
-    result = result.replace(/^#\s+(.+)$/gm, '// $1');
+    // Also strip bold/italic formatting from headings (headings don't need it in dumbdown)
+    result = result.replace(/^######\s+(.+)$/gm, (match, title) => `////// ${title.replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*(.+?)\*/g, '$1')}`);
+    result = result.replace(/^#####\s+(.+)$/gm, (match, title) => `///// ${title.replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*(.+?)\*/g, '$1')}`);
+    result = result.replace(/^####\s+(.+)$/gm, (match, title) => `//// ${title.replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*(.+?)\*/g, '$1')}`);
+    result = result.replace(/^###\s+(.+)$/gm, (match, title) => `/// ${title.replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*(.+?)\*/g, '$1')}`);
+    result = result.replace(/^##\s+(.+)$/gm, (match, title) => `/// ${title.replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*(.+?)\*/g, '$1')}`);
+    result = result.replace(/^#\s+(.+)$/gm, (match, title) => `// ${title.replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*(.+?)\*/g, '$1')}`);
 
-    // Convert bold: **text** or __text__ -> TEXT
-    result = result.replace(/\*\*([^*]+)\*\*/g, (match, text) => text.toUpperCase());
-    result = result.replace(/__([^_]+)__/g, (match, text) => text.toUpperCase());
-
-    // Convert italic: *text* or _text_ -> TEXT
-    result = result.replace(/\*([^*]+)\*/g, (match, text) => text.toUpperCase());
-    result = result.replace(/_([^_]+)_/g, (match, text) => text.toUpperCase());
-
-    // Convert unordered lists with proper nesting
-    // First pass: convert all list markers to temporary markers
+    // Process lists first, then handle formatting within list items
     const lines = result.split('\n');
     const processedLines = [];
 
@@ -84,6 +76,16 @@ export class MarkdownConverter {
     }
 
     result = processedLines.join('\n');
+
+    // Convert bold and italic formatting (after list processing to avoid breaking list markers)
+    // Convert bold: **text** or __text__ -> TEXT (non-greedy, single line only)
+    result = result.replace(/\*\*([^*\n]+?)\*\*/g, (match, text) => text.toUpperCase());
+    result = result.replace(/__([^_\n]+?)__/g, (match, text) => text.toUpperCase());
+
+    // Convert italic: *text* or _text_ -> TEXT (non-greedy, single line only)
+    // Use spaces as boundaries to avoid matching list markers
+    result = result.replace(/(\s)\*([^*\n]+?)\*(\s|[,.]|$)/g, (match, before, text, after) => `${before}${text.toUpperCase()}${after}`);
+    result = result.replace(/(\s)_([^_\n]+?)_(\s|[,.]|$)/g, (match, before, text, after) => `${before}${text.toUpperCase()}${after}`);
 
     // Convert blockquotes: > text -> "text"
     result = result.replace(/^>\s+(.+)$/gm, '"$1"');
