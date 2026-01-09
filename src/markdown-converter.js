@@ -25,11 +25,10 @@ export class MarkdownConverter {
       return placeholder;
     });
 
-    // Convert headings: # -> //, ## -> ///, ### -> ////
+    // Convert headings: # -> //, ## -> ///, #### and beyond -> ///
     // Also strip bold/italic formatting from headings (headings don't need it in dumbdown)
-    result = result.replace(/^######\s+(.+)$/gm, (match, title) => `////// ${title.replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*(.+?)\*/g, '$1')}`);
-    result = result.replace(/^#####\s+(.+)$/gm, (match, title) => `///// ${title.replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*(.+?)\*/g, '$1')}`);
-    result = result.replace(/^####\s+(.+)$/gm, (match, title) => `//// ${title.replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*(.+?)\*/g, '$1')}`);
+    // H4+ all become H3 (/// ) since //// is pointless
+    result = result.replace(/^#{4,}\s+(.+)$/gm, (match, title) => `/// ${title.replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*(.+?)\*/g, '$1')}`);
     result = result.replace(/^###\s+(.+)$/gm, (match, title) => `/// ${title.replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*(.+?)\*/g, '$1')}`);
     result = result.replace(/^##\s+(.+)$/gm, (match, title) => `/// ${title.replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*(.+?)\*/g, '$1')}`);
     result = result.replace(/^#\s+(.+)$/gm, (match, title) => `// ${title.replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*(.+?)\*/g, '$1')}`);
@@ -106,6 +105,9 @@ export class MarkdownConverter {
 
     // Trim trailing whitespace
     result = result.trim();
+
+    // Add document markers: +++ at top and bottom
+    result = `+++\n\n${result}\n\n+++`;
 
     return result;
   }
