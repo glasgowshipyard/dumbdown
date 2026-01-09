@@ -16,6 +16,15 @@ export class MarkdownConverter {
 
     let result = markdown;
 
+    // Protect LaTeX math expressions from conversion
+    const mathBlocks = [];
+    // Match both inline $...$ and display $$...$$ math
+    result = result.replace(/(\$\$[\s\S]+?\$\$|\$[^\$\n]+?\$)/g, (match) => {
+      const placeholder = `__MATH_${mathBlocks.length}__`;
+      mathBlocks.push(match);
+      return placeholder;
+    });
+
     // Convert headings: # -> //, ## -> ///, ### -> ////
     result = result.replace(/^######\s+(.+)$/gm, '////// $1');
     result = result.replace(/^#####\s+(.+)$/gm, '///// $1');
@@ -87,6 +96,11 @@ export class MarkdownConverter {
 
     // Clean up multiple blank lines
     result = result.replace(/\n{3,}/g, '\n\n');
+
+    // Restore LaTeX math expressions
+    mathBlocks.forEach((math, index) => {
+      result = result.replace(`__MATH_${index}__`, math);
+    });
 
     // Trim trailing whitespace
     result = result.trim();
