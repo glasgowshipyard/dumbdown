@@ -4,6 +4,7 @@
  */
 
 import { Converter } from './converter';
+import { MarkdownConverter } from './markdown-converter';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -39,7 +40,7 @@ export default {
         });
       }
 
-      // Conversion endpoint
+      // HTML Conversion endpoint
       if (pathname === '/convert' && request.method === 'POST') {
         const body = await request.json();
         const { text } = body;
@@ -93,40 +94,57 @@ export default {
         }
       }
 
-      // Serve static files (web UI)
-      if (pathname === '/' || pathname === '/index.html') {
-        try {
-          const html = await env.ASSETS.get('index.html');
-          if (html) {
-            return new Response(html, {
-              status: 200,
-              headers: {
-                'Content-Type': 'text/html; charset=utf-8',
-                'Cache-Control': 'public, max-age=3600',
-                ...CORS_HEADERS,
-              },
-            });
-          }
-        } catch (e) {
-          // Fall through to 404
-        }
-      }
+      // Markdown Conversion endpoint
+      if (pathname === '/convert-markdown' && request.method === 'POST') {
+        const body = await request.json();
+        const { markdown } = body;
 
-      if (pathname === '/script.js') {
-        try {
-          const js = await env.ASSETS.get('script.js');
-          if (js) {
-            return new Response(js, {
-              status: 200,
+        if (!markdown || typeof markdown !== 'string') {
+          return new Response(
+            JSON.stringify({
+              error: 'Invalid request',
+              message: 'Please provide markdown text in the request body as { markdown: "..." }',
+            }),
+            {
+              status: 400,
               headers: {
-                'Content-Type': 'application/javascript; charset=utf-8',
-                'Cache-Control': 'public, max-age=3600',
+                'Content-Type': 'application/json',
                 ...CORS_HEADERS,
               },
-            });
-          }
-        } catch (e) {
-          // Fall through to 404
+            }
+          );
+        }
+
+        try {
+          const result = MarkdownConverter.convert(markdown);
+          return new Response(
+            JSON.stringify({
+              success: true,
+              dumbdown: result,
+            }),
+            {
+              status: 200,
+              headers: {
+                'Content-Type': 'application/json',
+                ...CORS_HEADERS,
+              },
+            }
+          );
+        } catch (error) {
+          console.error('Markdown conversion error:', error);
+          return new Response(
+            JSON.stringify({
+              error: 'Conversion failed',
+              message: error.message,
+            }),
+            {
+              status: 500,
+              headers: {
+                'Content-Type': 'application/json',
+                ...CORS_HEADERS,
+              },
+            }
+          );
         }
       }
 
@@ -134,7 +152,7 @@ export default {
       return new Response(
         JSON.stringify({
           error: 'Not found',
-          message: 'Endpoint not found. Try POST /convert or GET /health',
+          message: 'Endpoint not found. Try POST /convert-markdown, POST /convert, or GET /health',
         }),
         {
           status: 404,
