@@ -105,6 +105,86 @@
         .smooth-transition {
             transition: all 0.2s ease-in-out;
         }
+
+        .btn-toolbar {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-family: 'JetBrains Mono', monospace;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .btn-toolbar:hover {
+            background-color: var(--accent-from);
+            color: white;
+            border-color: var(--accent-from);
+        }
+
+        .btn-toolbar.active {
+            background-color: var(--accent-from);
+            color: white;
+            border-color: var(--accent-from);
+        }
+
+        #editor {
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        #editor:focus {
+            outline: 2px solid var(--accent-from);
+            outline-offset: -2px;
+        }
+
+        #preview h1 {
+            font-size: 1.875rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--accent-from);
+        }
+
+        #preview h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--accent-to);
+        }
+
+        #preview code {
+            background-color: var(--bg-tertiary);
+            padding: 0.125rem 0.375rem;
+            border-radius: 0.25rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+        }
+
+        #preview pre {
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem;
+            padding: 1rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+
+        #preview pre code {
+            background: none;
+            padding: 0;
+        }
+
+        #preview ul, #preview ol {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        #preview li {
+            margin-bottom: 0.5rem;
+        }
     </style>
 </head>
 <body class="min-h-screen">
@@ -113,49 +193,57 @@
         <!-- Document start marker -->
         <div class="text-2xl font-mono mb-8 opacity-30 text-left">+++</div>
 
-        <div class="mb-16">
-            <h1 class="text-5xl md:text-7xl font-bold mb-6 text-gradient font-mono">
-                // dumbdown
-            </h1>
-            <p class="text-xl md:text-2xl mb-8" style="color: var(--text-secondary);">
-                Write it once. Read it anywhere.
-            </p>
-            <p class="text-lg max-w-2xl leading-relaxed" style="color: var(--text-tertiary);">
-                Dumbdown is a formatting system designed for humans, not machines. No special rendering required.
-                Write it in a code block, plain text file, or anywhere - it's immediately readable.
-            </p>
-        </div>
+        <!-- Navigation -->
+        <nav class="mb-8 flex gap-4 items-center" style="color: var(--text-secondary);">
+            <a href="#home" class="nav-tab smooth-transition hover:text-gradient active" style="color: var(--accent-from); font-weight: 600;" data-tab="home">Home</a>
+            <a href="#editor" class="nav-tab smooth-transition" style="color: var(--text-secondary);" data-tab="editor">Editor</a>
+        </nav>
 
-        <!-- Philosophy Section -->
-        <section class="mb-20">
+        <!-- Home Tab Content -->
+        <div id="home-tab" class="tab-content">
+            <div class="mb-16">
+                <h1 class="text-5xl md:text-7xl font-bold mb-6 text-gradient font-mono">
+                    // dumbdown
+                </h1>
+                <p class="text-xl md:text-2xl mb-8" style="color: var(--text-secondary);">
+                    WRITE ONCE, READ ANYWHERE
+                </p>
+                <p class="text-lg max-w-2xl leading-relaxed" style="color: var(--text-tertiary);">
+                    Dumbdown is a formatting style designed to work without a renderer requirement.
+                    Write it in a code block, plain text file, or anywhere - it's intereadable (interpretable-readable).
+                </p>
+            </div>
+
+            <!-- Philosophy Section -->
+            <section class="mb-20">
             <h2 class="text-3xl font-bold mb-8 font-mono">/// Why Dumbdown?</h2>
             <div class="grid md:grid-cols-2 gap-8">
                 <div class="card rounded-xl p-6 smooth-transition hover:scale-105">
                     <h3 class="text-xl font-semibold mb-3">Human-Readable First</h3>
                     <p style="color: var(--text-secondary);">
-                        Markdown needs rendering. HTML needs a browser. Dumbdown? Just read it.
-                        No parser, no preview - what you see is what you get.
+                        My should text required a rendering layer? Markdown, HTML, .doc, .pdf all need middleware to make it look as intended.
+                        Dumbdown? Just read/write it.
+                        No parser, no preview - you get what you see.
                     </p>
                 </div>
                 <div class="card rounded-xl p-6 smooth-transition hover:scale-105">
                     <h3 class="text-xl font-semibold mb-3">Write Anywhere</h3>
                     <p style="color: var(--text-secondary);">
-                        Code blocks, text files, comments, documentation. If you can type text,
-                        you can write dumbdown - and everyone can read it.
+                        Code blocks, text files, comments, docs. If you can type text,
+                        you can write dumbdown. Everyone can read it.
                     </p>
                 </div>
                 <div class="card rounded-xl p-6 smooth-transition hover:scale-105">
                     <h3 class="text-xl font-semibold mb-3">Simple Rules</h3>
                     <p style="color: var(--text-secondary);">
-                        Learn the syntax once. Use it forever. No edge cases, no conflicting flavors,
-                        no memorizing when to escape characters.
+                        Simple syntax. Use (almost?) anywhere. No edge cases, conflicting styles or remembering when to escape characters.
                     </p>
                 </div>
                 <div class="card rounded-xl p-6 smooth-transition hover:scale-105">
                     <h3 class="text-xl font-semibold mb-3">Zero Dependencies</h3>
                     <p style="color: var(--text-secondary);">
                         No libraries. No build steps. No converters needed to read it.
-                        Just open the file and understand it instantly.
+                        Open a file and understand it instantly.
                     </p>
                 </div>
             </div>
@@ -215,7 +303,8 @@
                             <div class="code-block rounded-lg p-4 text-sm">
                                 <div>1. First step</div>
                                 <div>2. Second step</div>
-                                <div>-- Sub-step</div>
+                                <div class="ml-4">a. Sub-step</div>
+                                <div class="ml-4">b. Another sub-step</div>
                                 <div>3. Third step</div>
                             </div>
                         </div>
@@ -339,17 +428,148 @@ Paste your markdown and watch it transform..."
             <div id="status" class="mt-4 text-center text-sm min-h-6"></div>
         </section>
 
-        <!-- Footer -->
-        <footer class="py-8 border-t" style="border-color: var(--border-color); color: var(--text-tertiary);">
-            <p class="text-sm">
-                Dumbdown v2 — Human-readable formatting for everyone
-            </p>
-        </footer>
+            <!-- Footer -->
+            <footer class="py-8 border-t" style="border-color: var(--border-color); color: var(--text-tertiary);">
+                <p class="text-sm">
+                    Dumbdown v2 — Human-readable formatting for everyone
+                </p>
+            </footer>
+        </div>
+
+        <!-- Editor Tab Content -->
+        <div id="editor-tab" class="tab-content hidden">
+            <div class="mb-16">
+                <h1 class="text-5xl md:text-7xl font-bold mb-6 text-gradient font-mono">
+                    // dumbstack
+                </h1>
+                <p class="text-xl md:text-2xl mb-8" style="color: var(--text-secondary);">
+                    Write clean, readable documents with toolbar-assisted formatting.
+                </p>
+                <p class="text-lg max-w-2xl leading-relaxed" style="color: var(--text-tertiary);">
+                    Toggle preview to see LaTeX and code rendered inline.
+                </p>
+            </div>
+
+            <!-- Editor Section -->
+            <section class="mb-20">
+                <!-- Toolbar -->
+                <div class="mb-6">
+                    <div class="mb-3 text-sm font-medium" style="color: var(--text-secondary);">Format</div>
+                    <div class="flex flex-wrap gap-3">
+                        <button class="btn-toolbar" onclick="insertFormat('//')" title="Main heading">
+                            <span class="font-bold text-lg">H1</span>
+                        </button>
+                        <button class="btn-toolbar" onclick="insertFormat('///')" title="Subheading">
+                            <span class="font-bold text-base">H2</span>
+                        </button>
+                        <button class="btn-toolbar" onclick="toggleAllCaps()" title="ALL CAPS emphasis">
+                            <span class="font-bold text-base">B</span>
+                        </button>
+                        <button class="btn-toolbar" onclick="insertFormat('`')" title="Inline code">
+                            <span class="font-mono text-base">&lt;/&gt;</span>
+                        </button>
+                        <button class="btn-toolbar" onclick="insertCodeBlock()" title="Code block">
+                            <span class="font-mono text-base">&lt;&gt;</span>
+                        </button>
+                        <button class="btn-toolbar" onclick="insertFormat('-')" title="List item">
+                            <span class="font-mono text-base">-</span>
+                        </button>
+                        <button class="btn-toolbar" onclick="insertNumberedList()" title="Numbered list">
+                            <span class="font-mono text-base">123</span>
+                        </button>
+                        <button class="btn-toolbar" onclick="insertMath()" title="LaTeX math">
+                            <span class="font-mono text-base">$</span>
+                        </button>
+                        <div class="flex-grow"></div>
+                        <button id="previewToggle" class="btn-toolbar" onclick="togglePreview()" title="Toggle preview">
+                            <span class="font-mono text-base">[&nbsp;]</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Editor / Preview -->
+                <div id="editorContainer">
+                    <textarea id="editor" class="w-full rounded-lg p-6 text-base leading-relaxed resize-vertical" style="min-height: 500px;" placeholder="Start writing in dumbdown format...
+
+// Example Document
+
+This is a paragraph with EMPHASIS in all caps.
+
+/// Subsection
+
+- List item one
+-- Nested item
+- List item two
+
+Inline code: `const x = 42`
+
+Code block:
+```
+function hello() {
+  console.log('Hello, world!');
+}
+```
+
+LaTeX math: $E = mc^2$
+
+Display math:
+$$
+\int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}
+$$
+"></textarea>
+                </div>
+
+                <div id="previewContainer" class="hidden">
+                    <div id="preview" class="code-block rounded-lg p-6 leading-relaxed" style="min-height: 500px;"></div>
+                </div>
+            </section>
+        </div>
 
         <!-- Document end marker -->
         <div class="text-2xl font-mono mt-8 opacity-30 text-right">+++</div>
     </div>
 
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
     <script src="script.js"></script>
+    <script src="editor.js"></script>
+    <script>
+        // Tab switching logic
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetTab = tab.dataset.tab;
+
+                // Hide all tabs
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.add('hidden');
+                });
+
+                // Show target tab
+                document.getElementById(targetTab + '-tab').classList.remove('hidden');
+
+                // Update active state
+                document.querySelectorAll('.nav-tab').forEach(t => {
+                    t.classList.remove('active');
+                    t.style.color = 'var(--text-secondary)';
+                    t.style.fontWeight = '400';
+                });
+
+                tab.classList.add('active');
+                tab.style.color = 'var(--accent-from)';
+                tab.style.fontWeight = '600';
+            });
+        });
+
+        // Handle initial hash
+        if (window.location.hash === '#editor') {
+            document.querySelector('[data-tab="editor"]').click();
+        }
+    </script>
 </body>
 </html>
