@@ -26,11 +26,10 @@ Unordered:
 
 Ordered:  
 1. Ordered item  
-2. Another item  
-   — Sub-item  
+2. Another item
+  a. Sub-item  
 
-- Dash - for main bullets, double dash -- for sub-bullets  
-- Simple, clear, no indentation rules  
+- Dash - for main bullets, double dash -- for sub-bullets 
 
 LABELS (CONTEXT MARKERS)  
 
@@ -58,6 +57,7 @@ Examples:
 Emphasis & Styling  
 ------------------ 
 - Use ALL CAPS for emphasis (instead of bold or italics) no **emphasis**
+-- This will hopefully help prevent people (especially AI) from constant italics and bold text
 
 QUOTES & EXCERPTS  
 
