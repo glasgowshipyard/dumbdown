@@ -9,11 +9,13 @@ Convert Markdown to clean, human-readable dumbdown format.
 Dumbdown is a text formatting system designed for humans, not machines. Unlike Markdown or HTML, dumbdown is immediately readable without any rendering - what you see in plain text is what you get.
 
 Key principles:
-- Human-readable first
-- No rendering required
-- Simple, consistent rules
-- Two heading levels (// and ///)
-- Plain text emphasis (ALL CAPS)
+ - Human-readable first
+ - No rendering required
+ - Simple, consistent rules
+ - Two heading levels
+ -- // Heading One
+ -- /// Heading Two
+ - Plain text emphasis (ALL CAPS)
 
 /// Features
 
@@ -35,8 +37,6 @@ Start the server:
 ```
 npm start
 ```
-
-Visit http://localhost:3000
 
 /// API Usage
 
